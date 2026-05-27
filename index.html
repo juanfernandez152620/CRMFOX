@@ -1,0 +1,2458 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM y Cuponera</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #f5f0e8;
+  --blush: #ede6d6;
+  --pink-light: #ddd4be;
+  --pink: #b8a98a;
+  --pink-deep: #1a3252;
+  --white: #ffffff;
+  --text: #0f1f33;
+  --text-muted: #5a6a7a;
+  --text-soft: #8fa0b0;
+  --border: #ddd6c8;
+  --border-strong: #c8bfa8;
+  --shadow: rgba(26,50,82,0.10);
+  --shadow-lg: rgba(26,50,82,0.18);
+  --accent: #e8650a;
+  --accent-dark: #c95508;
+  --green-wa: #25D366;
+  --green-wa-dark: #1ebe5a;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --max-w: 480px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: linear-gradient(155deg, #ddd8ce 0%, #f0ece2 35%, #eae5d8 65%, #d8d2c4 100%);
+  min-height: 100vh;
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+}
+@media (min-width: 520px) {
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    top: 0; bottom: 0; width: 120px;
+    pointer-events: none; z-index: 1000;
+  }
+  body::before { left: 0; background: linear-gradient(to right, rgba(220,214,200,0.7), transparent); }
+  body::after  { right: 0; background: linear-gradient(to left, rgba(220,214,200,0.7), transparent); }
+}
+
+#app {
+  width: 100%;
+  max-width: var(--max-w);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--cream);
+  box-shadow: 0 0 60px var(--shadow-lg);
+}
+
+.top-nav {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.nav-brand {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 10px;
+}
+.nav-brand h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.25rem; font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+.nav-brand h1 span { color: var(--accent); }
+.nav-tabs { display: flex; padding: 0 20px; }
+.nav-tab {
+  flex: 1; padding: 10px 0;
+  background: none; border: none;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.85rem; font-weight: 500;
+  color: var(--text-muted); cursor: pointer;
+  border-bottom: 2.5px solid transparent;
+  transition: all 0.2s;
+}
+.nav-tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+
+.page { display: none; flex: 1; flex-direction: column; padding-bottom: 100px; }
+.page.active { display: flex; }
+
+.toolbar {
+  padding: 14px 16px 10px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.search-input-wrap { position: relative; }
+.search-input-wrap svg {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-soft); pointer-events: none;
+}
+.search-input {
+  width: 100%; padding: 10px 12px 10px 38px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--cream); font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; color: var(--text);
+  transition: border-color 0.2s;
+}
+.search-input:focus { outline: none; border-color: var(--pink); }
+.filters-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filter-chip {
+  padding: 6px 12px; border-radius: 20px; font-size: 0.78rem;
+  border: 1.5px solid var(--border); background: var(--white);
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  color: var(--text-muted); font-weight: 500;
+  transition: all 0.15s; white-space: nowrap;
+}
+.filter-chip.active { background: var(--pink-light); border-color: var(--pink); color: var(--pink-deep); }
+.filter-chip:hover { border-color: var(--pink); }
+select.filter-select {
+  padding: 6px 10px; border-radius: 20px; font-size: 0.78rem;
+  border: 1.5px solid var(--border); background: var(--white);
+  font-family: 'DM Sans', sans-serif; cursor: pointer;
+  color: var(--text-muted); font-weight: 500; appearance: none;
+  padding-right: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23c4a09a' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 8px center;
+}
+select.filter-select:focus { outline: none; border-color: var(--pink); }
+
+.list-container { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+.client-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 14px 16px;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 1px 4px var(--shadow);
+  display: flex; align-items: center; gap: 14px;
+}
+.client-card:hover { border-color: var(--pink); box-shadow: 0 4px 16px var(--shadow-lg); transform: translateY(-1px); }
+.client-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, #2a4a6e, #1a3252);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-weight: 700;
+  font-size: 1rem; color: var(--white); flex-shrink: 0;
+}
+.client-info { flex: 1; min-width: 0; }
+.client-name { font-weight: 600; font-size: 0.92rem; color: var(--text); margin-bottom: 2px; }
+.client-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+.meta-tag {
+  font-size: 0.72rem; color: var(--text-muted);
+  background: var(--cream); border-radius: 10px;
+  padding: 2px 8px; border: 1px solid var(--border);
+}
+.meta-tag.local { background: #f0ece0; color: #7a6540; border-color: #d8cdb0; }
+.meta-tag.online { background: #e8eef5; color: #1a3252; border-color: #b8cde0; }
+.client-dates { text-align: right; flex-shrink: 0; }
+.date-label { font-size: 0.68rem; color: var(--text-soft); }
+.date-val { font-size: 0.78rem; color: var(--text-muted); font-weight: 500; }
+
+/* FAB — mobile-first: pegados a los bordes del viewport, dentro del contenedor en desktop */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, #2a4a6e, #0f1f33);
+  border: none; cursor: pointer; color: white;
+  box-shadow: 0 4px 20px rgba(26,50,82,0.40);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; transition: all 0.2s; z-index: 50;
+  /* Mobile: right edge with 16px margin */
+  right: 16px;
+}
+.fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(26,50,82,0.55); }
+
+.fab-wa {
+  width: auto; padding: 0 18px; border-radius: 28px;
+  background: linear-gradient(135deg, var(--green-wa), var(--green-wa-dark));
+  box-shadow: 0 4px 20px rgba(37,211,102,0.35);
+  font-size: 0.88rem; font-weight: 600; gap: 8px;
+  white-space: nowrap;
+  /* Mobile: left edge with 16px margin */
+  left: 16px;
+  right: auto;
+}
+.fab-wa:hover { box-shadow: 0 6px 24px rgba(37,211,102,0.5); }
+
+/* Desktop: anchor to the app container edges */
+@media (min-width: 520px) {
+  .fab {
+    right: calc(50% - var(--max-w)/2 + 16px);
+  }
+  .fab-wa {
+    left: calc(50% - var(--max-w)/2 + 16px);
+    right: auto;
+  }
+}
+
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(58,42,40,0.45); backdrop-filter: blur(3px);
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--white); border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%; max-width: var(--max-w);
+  max-height: 92vh; overflow-y: auto;
+  transform: translateY(40px); transition: transform 0.3s cubic-bezier(.32,1,.55,1);
+  padding: 0 0 30px;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 14px; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--white); z-index: 2;
+}
+.modal-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; }
+.btn-close {
+  width: 32px; height: 32px; border-radius: 50%; border: none;
+  background: var(--blush); color: var(--text-muted);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; transition: background 0.15s;
+}
+.btn-close:hover { background: var(--pink-light); }
+.modal-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.form-label .req { color: var(--pink-deep); }
+.form-hint { font-size: 0.74rem; color: var(--text-soft); margin-top: 2px; }
+.form-input, .form-select, .form-textarea {
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--cream);
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--text);
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--pink); background: var(--white);
+}
+.form-input.warn { border-color: #f59e0b; }
+.form-textarea { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 10px; }
+.form-row .form-group { flex: 1; }
+
+.tel-prefix-row { display: flex; gap: 8px; align-items: flex-start; }
+.tel-prefix-select { width: 140px; flex-shrink: 0; }
+.tel-number-wrap { flex: 1; position: relative; }
+.tel-preview { font-size: 0.72rem; color: var(--text-soft); margin-top: 3px; font-family: monospace; }
+
+.btn {
+  padding: 11px 20px; border-radius: var(--radius-sm);
+  border: none; font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; display: inline-flex; align-items: center; gap: 7px;
+}
+.btn-primary { background: linear-gradient(135deg, var(--pink-deep), #c86068); color: white; box-shadow: 0 2px 10px rgba(212,120,106,0.35); }
+.btn-primary:hover { box-shadow: 0 4px 16px rgba(212,120,106,0.5); transform: translateY(-1px); }
+.btn-secondary { background: var(--blush); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--pink-light); }
+.btn-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-wa { background: var(--green-wa); color: white; }
+.btn-wa:hover { background: var(--green-wa-dark); }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text-muted); }
+.btn-outline:hover { border-color: var(--pink); color: var(--pink-deep); }
+.btn-full { width: 100%; justify-content: center; }
+.btn-sm { padding: 7px 14px; font-size: 0.8rem; }
+
+.client-view-section { margin-bottom: 4px; }
+.section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-soft); font-weight: 600; margin-bottom: 8px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.info-item { display: flex; flex-direction: column; gap: 2px; }
+.info-item label { font-size: 0.72rem; color: var(--text-soft); font-weight: 600; }
+.info-item span { font-size: 0.88rem; color: var(--text); }
+.notes-list { display: flex; flex-direction: column; gap: 8px; }
+.note-card { background: var(--cream); border-radius: var(--radius-sm); border-left: 3px solid var(--pink-light); padding: 10px 12px; }
+.note-card.compra { border-left-color: var(--pink); }
+.note-card.comunicacion { border-left-color: #a0c4e8; }
+.note-date { font-size: 0.72rem; color: var(--text-soft); margin-bottom: 3px; }
+.note-desc { font-size: 0.85rem; color: var(--text); }
+.note-type-badge { font-size: 0.65rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: var(--text-soft); margin-bottom: 2px; }
+.client-action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+/* Cupones Tab */
+.cupon-header-btns { display: flex; gap: 10px; padding: 16px; }
+.cupon-search-bar { padding: 0 16px 10px; }
+
+.cupon-card-wrap { position: relative; }
+.cupon-cb { display: none; position: absolute; left: 10px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; cursor: pointer; z-index: 2; accent-color: var(--pink-deep); }
+.bulk-mode .cupon-cb { display: block; }
+.bulk-mode .cupon-card { padding-left: 40px; }
+.cupon-card {
+  background: var(--white); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 1px 4px var(--shadow); transition: all 0.15s;
+}
+.cupon-card.selected { border-color: var(--pink-deep); background: var(--blush); }
+.cupon-code { font-family: monospace; font-size: 0.92rem; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+.cupon-status { font-size: 0.72rem; font-weight: 600; padding: 3px 8px; border-radius: 10px; }
+.cupon-status.active { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+.cupon-status.redeemed { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+.cupon-client { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+.cupon-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.cupon-client-actions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+
+.bulk-action-bar {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--text); color: white;
+  padding: 10px 16px; display: none;
+  align-items: center; justify-content: space-between; gap: 10px;
+}
+.bulk-action-bar.visible { display: flex; }
+.bulk-count { font-size: 0.82rem; font-weight: 600; }
+.bulk-btns { display: flex; gap: 8px; }
+.btn-bulk-redeem { background: #15803d; color: white; padding: 7px 12px; border-radius: var(--radius-sm); border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+.btn-bulk-delete { background: #dc2626; color: white; padding: 7px 12px; border-radius: var(--radius-sm); border: none; font-size: 0.78rem; font-weight: 600; cursor: pointer; }
+.btn-bulk-cancel { background: rgba(255,255,255,0.15); color: white; padding: 7px 12px; border-radius: var(--radius-sm); border: none; font-size: 0.78rem; cursor: pointer; }
+
+.cupon-mode-bar { padding: 10px 16px 0; display: flex; gap: 8px; }
+.mode-btn { padding: 6px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 500; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+.mode-btn.active { background: var(--blush); border-color: var(--pink); color: var(--pink-deep); }
+
+.template-banner {
+  background: linear-gradient(135deg, var(--blush), var(--pink-light));
+  padding: 14px 16px; display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.template-banner-info h3 { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; }
+.template-banner-info p { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+.template-badge { background: var(--pink-deep); color: white; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 10px; white-space: nowrap; }
+
+.var-chips-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.var-chip { padding: 5px 10px; border-radius: 16px; font-size: 0.75rem; font-weight: 600; background: var(--blush); border: 1.5px solid var(--pink-light); color: var(--pink-deep); cursor: pointer; transition: all 0.15s; }
+.var-chip:hover { background: var(--pink-light); }
+.var-chip.custom { background: #f0f5fd; border-color: #ccd8f5; color: #5080c8; }
+
+.inner-tabs { display: flex; border-bottom: 1px solid var(--border); margin: 0 -20px; padding: 0 20px; gap: 0; }
+.inner-tab { padding: 10px 16px; font-size: 0.82rem; font-weight: 500; border: none; background: none; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; transition: all 0.15s; }
+.inner-tab.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 10px; }
+.empty-state p { font-size: 0.88rem; }
+
+.toast-container { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast { background: var(--text); color: white; padding: 10px 18px; border-radius: 24px; font-size: 0.82rem; font-weight: 500; box-shadow: 0 4px 16px rgba(0,0,0,0.2); opacity: 0; transform: translateY(-8px); transition: all 0.25s; pointer-events: none; }
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: #15803d; }
+.toast.error { background: #dc2626; }
+.toast.warn { background: #d97706; }
+
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--pink-deep); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 30px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+.btn-loading { position: relative; pointer-events: none; }
+.btn-loading::after { content: ''; display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; margin-left: 7px; vertical-align: middle; }
+
+.radio-group { display: flex; gap: 10px; }
+.radio-label { flex: 1; padding: 9px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 7px; font-size: 0.85rem; font-weight: 500; transition: all 0.15s; }
+.radio-label input { display: none; }
+.radio-label.checked { border-color: var(--pink); background: var(--blush); color: var(--pink-deep); }
+
+.bulk-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; min-height: 44px; border: 1.5px solid var(--border); border-radius: var(--radius-sm); background: var(--cream); }
+.bulk-tag { background: var(--pink-light); color: var(--pink-deep); padding: 3px 8px 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.bulk-tag button { background: none; border: none; cursor: pointer; color: var(--pink-deep); font-size: 0.85rem; line-height: 1; padding: 0; }
+
+.redeem-list { max-height: 45vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 0 20px 10px; }
+.count-badge { display: inline-flex; align-items: center; justify-content: center; background: var(--pink-deep); color: white; border-radius: 10px; font-size: 0.68rem; font-weight: 700; padding: 1px 6px; min-width: 18px; }
+.pool-indicator { background: var(--blush); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+.pool-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink-deep); }
+.cupon-section-title { font-family: 'Playfair Display', serif; font-size: 0.88rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 600; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pink-light); border-radius: 4px; }
+
+/* DATE RANGE FILTERS */
+.date-filter-row { display: flex; flex-direction: column; gap: 6px; }
+.date-filter-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); }
+.date-range-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.date-range-input-group { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 120px; }
+.date-range-input-group label { font-size: 0.68rem; color: var(--text-soft); font-weight: 600; }
+.date-btn-group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.date-btn { padding: 5px 10px; border-radius: 16px; font-size: 0.75rem; font-weight: 500; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; color: var(--text-muted); transition: all 0.15s; }
+.date-btn.active { background: var(--blush); border-color: var(--pink); color: var(--pink-deep); }
+.date-clear-btn { padding: 5px 10px; border-radius: 16px; font-size: 0.75rem; font-weight: 500; border: 1.5px solid #fecaca; background: #fef2f2; cursor: pointer; color: #dc2626; transition: all 0.15s; display: none; }
+.date-clear-btn.visible { display: inline-block; }
+
+/* ERROR MODAL */
+.error-modal-body { padding: 20px; text-align: center; }
+.error-icon { font-size: 2.5rem; margin-bottom: 10px; }
+.error-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; color: #dc2626; }
+.error-msg { font-size: 0.88rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
+
+/* CUSTOM VARIABLE BUILDER */
+.custom-var-container { border: 1.5px solid var(--border-strong); border-radius: var(--radius-sm); padding: 12px; background: var(--cream); }
+.custom-var-name-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+.custom-var-name-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+.custom-var-inputs { display: flex; flex-direction: column; gap: 6px; }
+.custom-var-input-row { display: flex; gap: 6px; align-items: center; }
+.custom-var-input-row input { flex: 1; }
+.custom-var-remove { background: none; border: none; color: var(--text-soft); cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
+.custom-var-remove:hover { background: var(--blush); color: #dc2626; }
+.custom-var-add-btn { margin-top: 6px; padding: 5px 12px; border-radius: 16px; font-size: 0.76rem; border: 1.5px dashed var(--border-strong); background: none; cursor: pointer; color: var(--text-muted); transition: all 0.15s; display: flex; align-items: center; gap: 5px; width: fit-content; }
+.custom-var-add-btn:hover { border-color: var(--pink); color: var(--pink-deep); }
+.custom-vars-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.add-var-btn { padding: 7px 14px; border-radius: var(--radius-sm); border: 1.5px dashed var(--border-strong); background: none; cursor: pointer; color: var(--text-muted); font-size: 0.82rem; display: flex; align-items: center; gap: 6px; transition: all 0.15s; }
+.add-var-btn:hover { border-color: var(--pink); color: var(--pink-deep); }
+
+/* POOL PICKER */
+.pool-picker-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.1s; }
+.pool-picker-item:hover { background: var(--blush); }
+.pool-picker-item input[type=checkbox] { accent-color: var(--pink-deep); width: 16px; height: 16px; flex-shrink: 0; }
+.pool-picker-item .pi-code { font-family: monospace; font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.pool-picker-item .pi-status { font-size: 0.7rem; padding: 2px 6px; border-radius: 8px; background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+
+/* LOADING SCREEN (WA send) */
+.loading-screen {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(58,42,40,0.55); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.25s;
+}
+.loading-screen.visible { opacity: 1; pointer-events: all; }
+.loading-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 32px 28px; max-width: 300px; width: 90%;
+  text-align: center; box-shadow: 0 8px 40px rgba(58,42,40,0.25);
+}
+.loading-throbber {
+  width: 48px; height: 48px; margin: 0 auto 20px;
+  border: 4px solid var(--border);
+  border-top-color: var(--pink-deep);
+  border-radius: 50%; animation: spin 0.8s linear infinite;
+}
+.loading-title { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.loading-step { font-size: 0.82rem; color: var(--text-muted); min-height: 20px; transition: opacity 0.3s; }
+
+/* SHOW-ALL toggle */
+.tv-sent-badge { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; border-radius: 10px; font-size: 0.7rem; font-weight: 600; padding: 2px 7px; margin-left: 6px; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <div class="nav-brand">
+      <h1>CRM <span>&</span> Cuponera</h1>
+      <span style="font-size:0.72rem;color:var(--text-soft);font-weight:500;">Indumentaria</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('crm')">Clientes</button>
+      <button class="nav-tab" onclick="switchTab('cupones')">Cupones</button>
+    </div>
+  </div>
+
+  <!-- CRM PAGE -->
+  <div class="page active" id="page-crm">
+    <div class="toolbar">
+      <div class="search-input-wrap">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" id="crm-search" placeholder="Buscar nombre, localidad, teléfono..." oninput="filterClients()">
+      </div>
+      <div class="filters-row">
+        <select class="filter-select" id="filter-tipo" onchange="filterClients()">
+          <option value="">Todos</option>
+          <option value="Tienda">Tienda</option>
+          <option value="Online">Online</option>
+        </select>
+        <select class="filter-select" id="filter-localidad" onchange="filterClients()">
+          <option value="">Localidad</option>
+        </select>
+        <button class="filter-chip" id="chip-date-compra" onclick="toggleDateFilter('compra')">Última compra</button>
+        <button class="filter-chip" id="chip-date-contacto" onclick="toggleDateFilter('contacto')">Último contacto</button>
+      </div>
+
+      <!-- DATE RANGE: Última compra -->
+      <div id="date-filter-compra" class="date-filter-row" style="display:none">
+        <div class="date-filter-label">Filtro por rango — Última compra:</div>
+        <div class="date-btn-group">
+          <button class="date-btn" onclick="setDatePreset('compra',7,this)">Últ. semana</button>
+          <button class="date-btn" onclick="setDatePreset('compra',30,this)">Últ. mes</button>
+          <button class="date-btn" onclick="setDatePreset('compra',90,this)">Últ. 3 meses</button>
+        </div>
+        <div class="date-range-row">
+          <div class="date-range-input-group">
+            <label>Desde</label>
+            <input type="date" class="form-input" id="date-from-compra" style="padding:5px 8px;font-size:0.78rem" onchange="applyDateRange('compra')">
+          </div>
+          <div class="date-range-input-group">
+            <label>Hasta</label>
+            <input type="date" class="form-input" id="date-to-compra" style="padding:5px 8px;font-size:0.78rem" onchange="applyDateRange('compra')">
+          </div>
+          <button class="date-clear-btn visible" onclick="clearDateFilter('compra')">✕ Limpiar</button>
+        </div>
+      </div>
+
+      <!-- DATE RANGE: Último contacto -->
+      <div id="date-filter-contacto" class="date-filter-row" style="display:none">
+        <div class="date-filter-label">Filtro por rango — Último contacto:</div>
+        <div class="date-btn-group">
+          <button class="date-btn" onclick="setDatePreset('contacto',7,this)">Últ. semana</button>
+          <button class="date-btn" onclick="setDatePreset('contacto',30,this)">Últ. mes</button>
+          <button class="date-btn" onclick="setDatePreset('contacto',90,this)">Últ. 3 meses</button>
+        </div>
+        <div class="date-range-row">
+          <div class="date-range-input-group">
+            <label>Desde</label>
+            <input type="date" class="form-input" id="date-from-contacto" style="padding:5px 8px;font-size:0.78rem" onchange="applyDateRange('contacto')">
+          </div>
+          <div class="date-range-input-group">
+            <label>Hasta</label>
+            <input type="date" class="form-input" id="date-to-contacto" style="padding:5px 8px;font-size:0.78rem" onchange="applyDateRange('contacto')">
+          </div>
+          <button class="date-clear-btn visible" onclick="clearDateFilter('contacto')">✕ Limpiar</button>
+        </div>
+      </div>
+    </div>
+    <div class="list-container" id="client-list"><div class="spinner"></div></div>
+    <button class="fab" title="Nuevo cliente" onclick="openModal('modal-new-client')">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+    </button>
+  </div>
+
+  <!-- CUPONES PAGE -->
+  <div class="page" id="page-cupones">
+    <div id="cupon-main-view">
+      <div class="cupon-header-btns">
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="openModal('modal-add-cupons')">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Agregar Cupones
+        </button>
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="openRedeemModal()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Canjear Cupón
+        </button>
+      </div>
+      <div class="cupon-mode-bar">
+        <button class="mode-btn active" id="mode-btn-normal" onclick="setCuponMode('normal')">Vista normal</button>
+        <button class="mode-btn" id="mode-btn-bulk" onclick="setCuponMode('bulk')">✓ Selección múltiple</button>
+      </div>
+      <div class="bulk-action-bar" id="bulk-action-bar">
+        <span class="bulk-count" id="bulk-count-label">0 seleccionados</span>
+        <div class="bulk-btns">
+          <button class="btn-bulk-redeem" onclick="bulkRedeemSelected()">✓ Canjear</button>
+          <button class="btn-bulk-delete" onclick="bulkDeleteSelected()">🗑 Eliminar</button>
+          <button class="btn-bulk-cancel" onclick="setCuponMode('normal')">Cancelar</button>
+        </div>
+      </div>
+      <div class="cupon-search-bar" style="padding-top:10px">
+        <div class="search-input-wrap">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="cupon-search" placeholder="Buscar código o cliente..." oninput="filterCupones()">
+        </div>
+      </div>
+      <div class="list-container" id="cupon-list" style="padding-top:0"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Template View -->
+    <div id="template-send-view" style="display:none; flex-direction:column; flex:1;">
+      <div class="template-banner">
+        <div style="flex:1">
+          <div class="template-badge">Plantilla activa</div>
+          <div class="template-banner-info">
+            <h3 id="tv-template-name">Nombre de plantilla</h3>
+            <p id="tv-template-desc"></p>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="exitTemplateView()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Salir
+        </button>
+      </div>
+      <div class="toolbar" style="padding:10px 16px">
+        <div class="search-input-wrap">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="tv-search" placeholder="Buscar clientes..." oninput="filterTemplateClients()">
+        </div>
+        <div class="filters-row">
+          <select class="filter-select" id="tv-filter-tipo" onchange="filterTemplateClients()">
+            <option value="">Todos</option>
+            <option value="Tienda">Tienda</option>
+            <option value="Online">Online</option>
+          </select>
+          <select class="filter-select" id="tv-filter-localidad" onchange="filterTemplateClients()">
+            <option value="">Localidad</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding:8px 16px 4px;font-size:0.75rem;color:var(--text-muted);display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span id="tv-filter-label">Clientes no contactados hoy — hacé click para abrir WhatsApp</span>
+        <button class="btn btn-secondary btn-sm" id="btn-show-all" onclick="toggleShowAll()" style="white-space:nowrap;font-size:0.72rem;padding:5px 10px">Mostrar todos</button>
+      </div>
+      <div id="tv-pool-info" style="padding:0 16px 8px;display:none">
+        <div class="pool-indicator"><div class="pool-dot"></div><span id="tv-pool-text"></span></div>
+      </div>
+      <div class="list-container" id="tv-client-list" style="padding-top:4px"></div>
+    </div>
+
+    <button class="fab fab-wa" id="fab-plantilla" onclick="openModal('modal-template')" title="Crear plantilla">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M13 0C5.373 0 0 5.373 0 12c0 2.122.558 4.112 1.528 5.836L0 24l6.336-1.656A11.94 11.94 0 0013 24c6.627 0 12-5.373 12-12S19.627 0 13 0zm0 22c-1.86 0-3.604-.5-5.112-1.373l-.366-.217-3.764.987.987-3.656-.236-.38A9.94 9.94 0 013 12C3 7.029 7.029 3 12 3s10 4.029 10 9-4.03 10-9 10z"/></svg>
+      Plantilla de Mensajes
+    </button>
+  </div>
+</div>
+
+<!-- LOADING SCREEN (WhatsApp send) -->
+<div class="loading-screen" id="wa-loading-screen">
+  <div class="loading-card">
+    <div class="loading-throbber"></div>
+    <div class="loading-title">Preparando mensaje...</div>
+    <div class="loading-step" id="wa-loading-step">Guardando contacto</div>
+  </div>
+</div>
+
+<!-- MODALS -->
+
+<!-- Error Modal -->
+<div class="modal-overlay" id="modal-error">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" style="color:#dc2626">Error</span>
+      <button class="btn-close" onclick="closeModal('modal-error')">×</button>
+    </div>
+    <div class="error-modal-body">
+      <div class="error-icon">⚠️</div>
+      <div class="error-title" id="error-modal-title">Algo salió mal</div>
+      <div class="error-msg" id="error-modal-msg"></div>
+      <button class="btn btn-danger btn-full" onclick="closeModal('modal-error')">Entendido</button>
+    </div>
+  </div>
+</div>
+
+<!-- Client View Modal -->
+<div class="modal-overlay" id="modal-client-view">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="cv-title">Cliente</span>
+      <button class="btn-close" onclick="closeModal('modal-client-view')">×</button>
+    </div>
+    <div class="modal-body" id="cv-body"></div>
+  </div>
+</div>
+
+<!-- New Client Modal -->
+<div class="modal-overlay" id="modal-new-client">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nuevo Cliente</span>
+      <button class="btn-close" onclick="closeModal('modal-new-client')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre y Apellido <span class="req">*</span></label>
+        <input class="form-input" id="nc-nombre" placeholder="Ej: María García">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teléfono <span class="req">*</span></label>
+        <div class="tel-prefix-row">
+          <select class="form-select tel-prefix-select" id="nc-tel-prefix" onchange="updateTelPreview('nc')"></select>
+          <div class="tel-number-wrap">
+            <input class="form-input" id="nc-tel-num" type="tel" placeholder="8155000000" oninput="updateTelPreview('nc')" maxlength="10">
+            <div class="tel-preview" id="nc-tel-preview"></div>
+          </div>
+        </div>
+        <div class="form-hint">Formato final: 549 + prefijo + número (sin 0 ni 15). Máx 8 dígitos locales, se avisará si se supera.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Localidad <span class="req">*</span></label>
+        <select class="form-select" id="nc-localidad"></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="nc-tipo">
+            <option value="Tienda">Tienda</option>
+            <option value="Online">Online</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Fecha Inicio</label>
+          <input class="form-input" id="nc-fecha" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección (opcional)</label>
+        <input class="form-input" id="nc-dir" placeholder="Calle y número">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nota de primera compra (opcional)</label>
+        <textarea class="form-textarea" id="nc-nota" placeholder="Descripción de la primera compra..." style="min-height:60px"></textarea>
+      </div>
+      <button class="btn btn-primary btn-full" id="btn-save-client" onclick="createClient()">Guardar Cliente</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Client Modal -->
+<div class="modal-overlay" id="modal-edit-client">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Editar Cliente</span>
+      <button class="btn-close" onclick="closeModal('modal-edit-client')">×</button>
+    </div>
+    <div class="modal-body" id="edit-client-body"></div>
+  </div>
+</div>
+
+<!-- New Note Modal -->
+<div class="modal-overlay" id="modal-new-note">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Nueva Nota</span>
+      <button class="btn-close" onclick="closeModal('modal-new-note')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tipo de nota</label>
+        <div class="radio-group">
+          <label class="radio-label checked" id="nt-compra-lbl" onclick="selectNoteType('compra')">
+            <input type="radio" name="note-type" value="compra" checked>🛍 Compra
+          </label>
+          <label class="radio-label" id="nt-com-lbl" onclick="selectNoteType('comunicacion')">
+            <input type="radio" name="note-type" value="comunicacion">💬 Comunicación
+          </label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha</label>
+        <input class="form-input" id="nn-fecha" type="date">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Descripción (opcional)</label>
+        <textarea class="form-textarea" id="nn-desc" placeholder="Descripción opcional..."></textarea>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="saveNote()">Guardar Nota</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Cupons Modal -->
+<div class="modal-overlay" id="modal-add-cupons">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Agregar Cupones</span>
+      <button class="btn-close" id="btn-close-add-cupons" onclick="closeModal('modal-add-cupons')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="inner-tabs">
+        <button class="inner-tab active" onclick="switchCuponTab('bulk',this)">Bulk / Lista</button>
+        <button class="inner-tab" onclick="switchCuponTab('generate',this)">Generar</button>
+        <button class="inner-tab" onclick="switchCuponTab('single',this)">Individual</button>
+      </div>
+
+      <!-- BULK TAB -->
+      <div id="cupon-tab-bulk" style="display:flex;flex-direction:column;gap:12px;margin-top:4px">
+        <div class="form-group">
+          <label class="form-label">Pegar o escribir códigos</label>
+          <p style="font-size:0.76rem;color:var(--text-muted);margin-bottom:6px">Separados por coma, espacio o enter. Ej: <code>VERANO10, SALE20, VIP50</code></p>
+          <div class="bulk-tags" id="bulk-tags-display"></div>
+          <input class="form-input" id="bulk-input" style="margin-top:6px" placeholder="Escribe un código y presioná Enter o coma" onkeydown="handleBulkInputKey(event)" oninput="handleBulkInputChange(event)">
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-save-bulk" onclick="saveBulkCupons()">Agregar Cupones</button>
+      </div>
+
+      <!-- GENERATE TAB -->
+      <div id="cupon-tab-generate" style="display:none;flex-direction:column;gap:12px;margin-top:4px">
+        <div class="form-group">
+          <label class="form-label">Prefijo</label>
+          <input class="form-input" id="gen-prefix" placeholder="Ej: hotSale-, VIP-, PROMO-">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Cantidad a generar</label>
+          <input class="form-input" id="gen-count" type="number" min="1" max="500" placeholder="Ej: 10">
+        </div>
+        <div id="gen-preview" style="font-size:0.78rem;color:var(--text-muted);padding:8px;background:var(--cream);border-radius:var(--radius-sm);display:none"></div>
+        <button class="btn btn-secondary btn-sm btn-full" onclick="previewGenerate()">Ver vista previa</button>
+        <button class="btn btn-primary btn-full" id="btn-save-generate" onclick="saveGeneratedCupons()">Generar y Guardar</button>
+      </div>
+
+      <!-- SINGLE TAB -->
+      <div id="cupon-tab-single" style="display:none;flex-direction:column;gap:12px;margin-top:4px">
+        <div class="form-group">
+          <label class="form-label">Código de cupón</label>
+          <input class="form-input" id="single-code" placeholder="Ej: CUMPLE2025">
+        </div>
+        <button class="btn btn-primary btn-full" id="btn-save-single" onclick="saveSingleCupon()">Agregar Cupón</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Redeem Modal -->
+<div class="modal-overlay" id="modal-redeem">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Canjear Cupón</span>
+      <button class="btn-close" onclick="closeModal('modal-redeem')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="search-input-wrap">
+        <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input class="search-input" id="redeem-search" placeholder="Buscar por código o nombre de cliente..." oninput="filterRedeemList()">
+      </div>
+    </div>
+    <div class="redeem-list" id="redeem-list"></div>
+    <div style="height:12px"></div>
+  </div>
+</div>
+
+<!-- Edit Cupon Modal -->
+<div class="modal-overlay" id="modal-edit-cupon">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Editar Cupón</span>
+      <button class="btn-close" onclick="closeModal('modal-edit-cupon')">×</button>
+    </div>
+    <div class="modal-body" id="edit-cupon-body"></div>
+  </div>
+</div>
+
+<!-- Template Creator Modal -->
+<div class="modal-overlay" id="modal-template">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Plantilla de Mensajes</span>
+      <button class="btn-close" onclick="closeModal('modal-template')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nombre de la plantilla</label>
+        <input class="form-input" id="tmpl-name" placeholder="Ej: Promo de verano">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mensaje</label>
+        <p style="font-size:0.76rem;color:var(--text-muted);margin-bottom:6px">
+          Las variables se escriben entre <strong>&&</strong>. Tocá una chip para insertarla:
+        </p>
+        <div class="var-chips-row" id="var-chips-row" style="margin-bottom:8px">
+          <span class="var-chip" onclick="insertVar('&nombre&')">👤 &nombre&</span>
+          <span class="var-chip" onclick="insertVar('&localidad&')">📍 &localidad&</span>
+          <span class="var-chip" onclick="insertVar('&telefono&')">📱 &telefono&</span>
+          <span class="var-chip" onclick="insertVar('&cupon&')">🎟 &cupon&</span>
+        </div>
+        <textarea class="form-textarea" id="tmpl-message" rows="5" placeholder="Hola &nombre&! Tenemos una promo especial para vos 🌸 Usá tu cupón: &cupon&"></textarea>
+      </div>
+
+      <!-- Custom variables builder -->
+      <div class="form-group">
+        <label class="form-label">Variables aleatorias personalizadas</label>
+        <p style="font-size:0.76rem;color:var(--text-muted);margin-bottom:8px">
+          Creá variables con múltiples opciones. Al enviar, la app elige cíclicamente entre las opciones.
+        </p>
+        <div class="custom-vars-list" id="custom-vars-list"></div>
+        <button class="add-var-btn" onclick="addCustomVar()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Nueva variable aleatoria
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Cupones para este envío</label>
+        <div class="radio-group" style="flex-wrap:wrap">
+          <label class="radio-label checked" id="cupon-opt-none-lbl" onclick="selectCuponOpt('none')">
+            <input type="radio" name="cupon-opt" value="none" checked>Sin cupones
+          </label>
+          <label class="radio-label" id="cupon-opt-generate-lbl" onclick="selectCuponOpt('generate')">
+            <input type="radio" name="cupon-opt" value="generate">Generar nuevos
+          </label>
+          <label class="radio-label" id="cupon-opt-pool-lbl" onclick="selectCuponOpt('pool')">
+            <input type="radio" name="cupon-opt" value="pool">Usar lista
+          </label>
+        </div>
+      </div>
+      <div id="tmpl-cupon-generate" style="display:none" class="form-group">
+        <label class="form-label">Prefijo de cupones a generar</label>
+        <input class="form-input" id="tmpl-gen-prefix" placeholder="Ej: MSG2025-">
+        <p style="font-size:0.76rem;color:var(--text-muted);margin-top:4px">Se generará 1 cupón único por cliente.</p>
+      </div>
+      <div id="tmpl-cupon-pool" style="display:none" class="form-group">
+        <label class="form-label">Elegir cupones para este envío</label>
+        <p style="font-size:0.76rem;color:var(--text-muted);margin-bottom:8px">Seleccioná los cupones activos que querés usar. Se asignarán uno por cliente en orden.</p>
+        <div class="search-input-wrap" style="margin-bottom:8px">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="pool-picker-search" placeholder="Filtrar cupones..." oninput="filterPoolPicker()">
+        </div>
+        <div id="pool-picker-list" style="max-height:200px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--cream);padding:6px;display:flex;flex-direction:column;gap:4px"></div>
+        <div id="pool-selected-summary" style="margin-top:8px;font-size:0.78rem;color:var(--text-muted)">0 cupones seleccionados</div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="createTemplate()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Crear Plantilla y Ver Clientes
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const API_URL = "https://script.google.com/macros/s/AKfycbw4xoOmtcmGDmT6_UXG3k3Or5hq3MjTIc0zT0SJyjVY_3Kpq3OcvjvA6upnkJrbVy3M/exec";
+
+// ============================================================
+// TUCUMAN LOCALITIES
+// ============================================================
+const TUCUMAN_LOCALIDADES = [
+  "Acheral","Aguilares","Alderetes","Amaicha del Valle","Arcadia",
+  "Bella Vista","Burruyacu","Capitán Cáceres","Chicligasta","Choromoro",
+  "Colalao del Valle","Concepción","El Cadillal","El Mollar","El Naranjo",
+  "Escaba","Famaillá","Graneros","Huacra","Ingenio Santa Bárbara",
+  "Juan Bautista Alberdi","La Cocha","La Ramada","Lamadrid","Las Cejas",
+  "Las Talitas","Los Ralos","Lules","Manantial","Medina",
+  "Monteros","Muñecas","Quilmes","Raco","Ranchillos",
+  "Rio Chico","Romera Pozo","Rosario de la Frontera","Rumi Punco",
+  "San Isidro de Lules","San Miguel de Tucumán","San Pablo","Santa Ana",
+  "Santa Cruz","Santa Rosa de Leales","Simoca","Tafí del Valle",
+  "Tafí Viejo","Tucumán Capital","Trancas","Villa Quinteros","Yerba Buena"
+];
+
+function normalizeLoc(s) {
+  if (!s) return '';
+  return String(s).toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g,' ').trim();
+}
+function canonicalLoc(s) {
+  const n = normalizeLoc(s);
+  for (const loc of TUCUMAN_LOCALIDADES) {
+    if (normalizeLoc(loc) === n) return loc;
+  }
+  for (const loc of TUCUMAN_LOCALIDADES) {
+    if (normalizeLoc(loc).includes(n) || n.includes(normalizeLoc(loc))) return loc;
+  }
+  return s;
+}
+
+// ============================================================
+// PHONE PREFIXES
+// ============================================================
+const PHONE_PREFIXES = [
+  { label: "381 – Tucumán Capital", code: "381", digits: 7 },
+  { label: "3865 – Aguilares / Monteros", code: "3865", digits: 6 },
+  { label: "3863 – Concepción / Famaillá", code: "3863", digits: 6 },
+  { label: "3867 – Tafí Viejo / Yerba Buena", code: "3867", digits: 6 },
+  { label: "3869 – Burruyacu / Trancas", code: "3869", digits: 6 },
+  { label: "3866 – Simoca / La Cocha", code: "3866", digits: 6 },
+  { label: "11 – CABA / GBA", code: "11", digits: 8 },
+  { label: "261 – Mendoza", code: "261", digits: 7 },
+  { label: "351 – Córdoba", code: "351", digits: 7 },
+  { label: "341 – Rosario", code: "341", digits: 7 },
+  { label: "Otro prefijo", code: "OTRO", digits: 8 },
+];
+
+function populatePrefixSelect(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = PHONE_PREFIXES.map(p =>
+    `<option value="${p.code}" data-digits="${p.digits}" ${p.code==='381'?'selected':''}>${p.label}</option>`
+  ).join('');
+}
+
+function updateTelPreview(prefix) {
+  const selEl = document.getElementById(`${prefix}-tel-prefix`);
+  const numEl = document.getElementById(`${prefix}-tel-num`);
+  const prevEl = document.getElementById(`${prefix}-tel-preview`);
+  if (!selEl || !numEl || !prevEl) return;
+  const selOpt = selEl.options[selEl.selectedIndex];
+  const prefixCode = selEl.value === 'OTRO' ? '' : selEl.value;
+  const maxDigits = parseInt(selOpt.getAttribute('data-digits')) || 8;
+  const num = numEl.value.replace(/\D/g,'');
+  if (num.length > maxDigits) {
+    numEl.classList.add('warn');
+    prevEl.style.color = '#d97706';
+    prevEl.textContent = `⚠ El número tiene ${num.length} dígitos, se esperan ${maxDigits}.`;
+  } else {
+    numEl.classList.remove('warn');
+    prevEl.style.color = 'var(--text-soft)';
+    prevEl.textContent = num.length > 0 ? `Número final: 549${prefixCode}${num}` : '';
+  }
+}
+
+function buildPhoneNumber(prefixSelectId, numInputId) {
+  const selEl = document.getElementById(prefixSelectId);
+  const numEl = document.getElementById(numInputId);
+  const prefixCode = selEl.value === 'OTRO' ? '' : selEl.value;
+  const num = numEl.value.replace(/\D/g,'');
+  if (!num) return '';
+  return `549${prefixCode}${num}`;
+}
+
+// ============================================================
+// STATE
+// ============================================================
+let clients = [];
+let cupones = [];
+let currentClient = null;
+let currentNoteClientId = null;
+let noteType = 'compra';
+let bulkCodes = [];
+let generatedPreviewCodes = [];
+let activeCuponOpt = 'none';
+let activeTemplate = null;
+let activeTemplateClients = [];
+let customVars = [];
+let cuponMode = 'normal';
+let selectedCuponIds = new Set();
+let showAllTemplateClients = false;
+
+// Selected pool cupons in template modal
+let selectedPoolCuponIds = new Set();
+
+// Date range filters
+let dateFilters = {
+  compra:   { from: null, to: null },
+  contacto: { from: null, to: null }
+};
+let activeDatePanel = { compra: false, contacto: false };
+
+// Request lock flags (prevent angry clicks)
+let isSavingClient = false;
+let isSavingBulkCupons = false;
+let isSavingGeneratedCupons = false;
+let isSavingSingleCupon = false;
+let isSendingWA = false;
+
+// ============================================================
+// API HELPERS
+// ============================================================
+async function apiGet(action) {
+  const r = await fetch(`${API_URL}?action=${action}`, { redirect: 'follow' });
+  return r.json();
+}
+async function apiPost(body) {
+  const r = await fetch(API_URL, {
+    method: 'POST', redirect: 'follow',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(body)
+  });
+  return r.json();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+async function init() {
+  populatePrefixSelect('nc-tel-prefix');
+  populateNewClientLocalities();
+  await Promise.all([loadClients(), loadCupones()]);
+}
+
+function populateNewClientLocalities() {
+  const sel = document.getElementById('nc-localidad');
+  if (sel) sel.innerHTML = TUCUMAN_LOCALIDADES.map(l => `<option value="${l}">${l}</option>`).join('');
+}
+
+async function loadClients() {
+  try {
+    const data = await apiGet('getClientes');
+    clients = Array.isArray(data) ? data : [];
+    clients.forEach(c => {
+      if (c['Localidad']) c['Localidad'] = canonicalLoc(c['Localidad']);
+    });
+    populateLocalidadFilter();
+    filterClients();
+  } catch(e) {
+    clients = [];
+    document.getElementById('client-list').innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Error al cargar clientes.<br>Verifica la URL del API.</p></div>`;
+  }
+}
+
+async function loadCupones() {
+  try {
+    const data = await apiGet('getCupones');
+    cupones = Array.isArray(data) ? data : [];
+    renderCupones();
+  } catch(e) { cupones = []; }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='crm') || (i===1 && tab==='cupones'));
+  });
+  document.getElementById('page-crm').classList.toggle('active', tab==='crm');
+  document.getElementById('page-cupones').classList.toggle('active', tab==='cupones');
+}
+
+// ============================================================
+// LOCALITY FILTER
+// ============================================================
+function populateLocalidadFilter() {
+  const used = new Set(clients.map(c => canonicalLoc(c['Localidad'])).filter(Boolean));
+  const locs = TUCUMAN_LOCALIDADES.filter(l => used.has(l));
+  ['filter-localidad','tv-filter-localidad'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Localidad</option>' + locs.map(l=>`<option value="${l}">${l}</option>`).join('');
+    if (locs.includes(cur)) sel.value = cur;
+  });
+}
+
+// ============================================================
+// CRM FILTER & RENDER — DATE RANGE
+// ============================================================
+function getActiveClients() {
+  return clients.filter(c => c['activo'] !== false && c['activo'] !== 'FALSE');
+}
+
+function toggleDateFilter(type) {
+  const panelEl = document.getElementById(`date-filter-${type}`);
+  const chipEl  = document.getElementById(`chip-date-${type}`);
+  const isOpen  = activeDatePanel[type];
+  if (isOpen) {
+    activeDatePanel[type] = false;
+    panelEl.style.display = 'none';
+    chipEl.classList.remove('active');
+  } else {
+    activeDatePanel[type] = true;
+    panelEl.style.display = 'flex';
+    chipEl.classList.add('active');
+  }
+}
+
+function setDatePreset(type, days, btn) {
+  document.querySelectorAll(`#date-filter-${type} .date-btn`).forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const to   = new Date();
+  const from = new Date(); from.setDate(from.getDate() - days);
+  dateFilters[type].from = from;
+  dateFilters[type].to   = to;
+  // Update inputs
+  const pad = n => String(n).padStart(2,'0');
+  const fmt  = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const fi = document.getElementById(`date-from-${type}`);
+  const ti = document.getElementById(`date-to-${type}`);
+  if (fi) fi.value = fmt(from);
+  if (ti) ti.value = fmt(to);
+  document.getElementById(`chip-date-${type}`).classList.add('active');
+  filterClients();
+}
+
+function applyDateRange(type) {
+  const fi = document.getElementById(`date-from-${type}`);
+  const ti = document.getElementById(`date-to-${type}`);
+  dateFilters[type].from = fi && fi.value ? new Date(fi.value + 'T00:00:00') : null;
+  dateFilters[type].to   = ti && ti.value ? new Date(ti.value + 'T23:59:59') : null;
+  // Clear preset buttons
+  document.querySelectorAll(`#date-filter-${type} .date-btn`).forEach(b => b.classList.remove('active'));
+  document.getElementById(`chip-date-${type}`).classList.add('active');
+  filterClients();
+}
+
+function clearDateFilter(type) {
+  dateFilters[type] = { from: null, to: null };
+  activeDatePanel[type] = false;
+  document.getElementById(`date-filter-${type}`).style.display = 'none';
+  document.getElementById(`chip-date-${type}`).classList.remove('active');
+  document.querySelectorAll(`#date-filter-${type} .date-btn`).forEach(b => b.classList.remove('active'));
+  const fi = document.getElementById(`date-from-${type}`);
+  const ti = document.getElementById(`date-to-${type}`);
+  if (fi) fi.value = '';
+  if (ti) ti.value = '';
+  filterClients();
+}
+
+function inDateRange(val, range) {
+  if (!range.from && !range.to) return true;
+  const d = parseDate(val);
+  if (!d) return false;
+  if (range.from && d < range.from) return false;
+  if (range.to   && d > range.to)   return false;
+  return true;
+}
+
+function filterClients() {
+  const q    = document.getElementById('crm-search').value.toLowerCase().trim();
+  const tipo = document.getElementById('filter-tipo').value;
+  const loc  = document.getElementById('filter-localidad').value;
+
+  const hasDateFilter = range => range.from || range.to;
+
+  let filtered = getActiveClients().filter(c => {
+    const cTipo = c['Tienda_Online'] || c['Tienda / Online'] || '';
+    const cLoc  = canonicalLoc(c['Localidad']);
+    if (tipo && cTipo !== tipo) return false;
+    if (loc && cLoc !== loc) return false;
+
+    if (hasDateFilter(dateFilters.compra)) {
+      if (!inDateRange(c['Fecha_de_ultima_compra'] || c['Fecha de ultima compra'], dateFilters.compra)) return false;
+    }
+    if (hasDateFilter(dateFilters.contacto)) {
+      if (!inDateRange(c['Fecha_de_ultima_Comunicacion'] || c['Fecha de ultima Cominicacion'], dateFilters.contacto)) return false;
+    }
+
+    if (q) {
+      const name = c['Nombre_apellido'] || c['Nombre / apellido'] || '';
+      const hay = [name, c['Localidad'], c['Numero_de_telefono'] || c['Numero de telefono']].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  renderClientList(filtered, 'client-list');
+}
+
+function parseDate(val) {
+  if (!val) return null;
+  const d = new Date(val);
+  return isNaN(d) ? null : d;
+}
+
+function renderClientList(list, containerId) {
+  const el = document.getElementById(containerId);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🌸</div><p>No hay clientes que coincidan con los filtros.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => clientCardHTML(c)).join('');
+}
+
+function clientCardHTML(c) {
+  const name = c['Nombre_apellido'] || c['Nombre / apellido'] || 'Sin nombre';
+  const initials = name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const loc  = canonicalLoc(c['Localidad']) || '';
+  const tel  = c['Numero_de_telefono'] || c['Numero de telefono'] || '';
+  const tipo = c['Tienda_Online'] || c['Tienda / Online'] || '';
+  const uc   = formatDate(c['Fecha_de_ultima_compra'] || c['Fecha de ultima compra']);
+  const ucom = formatDate(c['Fecha_de_ultima_Comunicacion'] || c['Fecha de ultima Cominicacion']);
+  const tipoClass = tipo === 'Online' ? 'online' : 'local';
+  return `<div class="client-card" onclick='openClientView(${JSON.stringify(c['ID_Cliente'])})'>
+    <div class="client-avatar">${initials}</div>
+    <div class="client-info">
+      <div class="client-name">${esc(name)}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted)">${esc(tel)}</div>
+      <div class="client-meta">
+        ${loc ? `<span class="meta-tag">${esc(loc)}</span>` : ''}
+        ${tipo ? `<span class="meta-tag ${tipoClass}">${esc(tipo)}</span>` : ''}
+      </div>
+    </div>
+    <div class="client-dates">
+      <div class="date-label">Última compra</div>
+      <div class="date-val">${uc}</div>
+      <div class="date-label" style="margin-top:4px">Contacto</div>
+      <div class="date-val">${ucom}</div>
+    </div>
+  </div>`;
+}
+
+function formatDate(val) {
+  if (!val) return '–';
+  const d = new Date(val);
+  if (isNaN(d)) return val;
+  return d.toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'2-digit' });
+}
+
+// ============================================================
+// CLIENT VIEW MODAL
+// ============================================================
+function openClientView(id) {
+  const c = clients.find(x => x['ID_Cliente'] === id);
+  if (!c) return;
+  currentClient = c;
+  const name = c['Nombre_apellido'] || c['Nombre / apellido'] || 'Cliente';
+  document.getElementById('cv-title').textContent = name;
+
+  let notes = [];
+  try { const raw = c['Notas_de_Compra'] || c['Notas de Compra']; notes = typeof raw==='string' ? JSON.parse(raw) : (raw||[]); } catch(e){ notes=[]; }
+  let comms = [];
+  try { const raw = c['Notas_de_comunicacion'] || c['Notas de comunicacion']; comms = typeof raw==='string' ? JSON.parse(raw) : (raw||[]); } catch(e){ comms=[]; }
+
+  const allNotes = [
+    ...notes.map(n=>({...n, _type:'compra'})),
+    ...comms.map(n=>({...n, _type:'comunicacion'}))
+  ].sort((a,b) => new Date(b['Fecha de compra']||b['Fecha']||0) - new Date(a['Fecha de compra']||a['Fecha']||0));
+
+  const tel = c['Numero_de_telefono'] || c['Numero de telefono'] || '';
+  const loc = canonicalLoc(c['Localidad']) || '–';
+  const tipo = c['Tienda_Online'] || c['Tienda / Online'] || '–';
+  const dir  = c['Direccion'] || '–';
+
+  document.getElementById('cv-body').innerHTML = `
+    <div class="client-view-section">
+      <div class="section-title">Información</div>
+      <div class="info-grid">
+        <div class="info-item"><label>Teléfono</label><span>${esc(tel||'–')}</span></div>
+        <div class="info-item"><label>Localidad</label><span>${esc(loc)}</span></div>
+        <div class="info-item"><label>Tipo</label><span>${esc(tipo)}</span></div>
+        <div class="info-item"><label>Dirección</label><span>${esc(dir)}</span></div>
+        <div class="info-item"><label>Inicio</label><span>${formatDate(c['Fecha_de_inicio']||c['Fecha de inicio'])}</span></div>
+        <div class="info-item"><label>Última compra</label><span>${formatDate(c['Fecha_de_ultima_compra']||c['Fecha de ultima compra'])}</span></div>
+        <div class="info-item"><label>Último contacto</label><span>${formatDate(c['Fecha_de_ultima_Comunicacion']||c['Fecha de ultima Cominicacion'])}</span></div>
+        <div class="info-item"><label>ID</label><span>${esc(c['ID_Cliente']||'–')}</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="client-action-btns">
+      <button class="btn btn-secondary btn-sm" onclick="openEditModal()">✏️ Editar</button>
+      <button class="btn btn-secondary btn-sm" onclick="openNewNote()">📝 Nueva Nota</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteClient()">🗑 Eliminar</button>
+    </div>
+    <div class="divider"></div>
+    <div class="client-view-section">
+      <div class="section-title">Historial (${allNotes.length})</div>
+      <div class="notes-list">
+        ${allNotes.length ? allNotes.map(n => {
+          const d    = n['Fecha de compra'] || n['Fecha'] || '';
+          const desc = n['Descripcion'] || n['Mensaje'] || '';
+          return `<div class="note-card ${n._type}">
+            <div class="note-type-badge">${n._type === 'compra' ? '🛍 Compra' : '💬 Comunicación'}</div>
+            <div class="note-date">${formatDate(d)}</div>
+            ${desc ? `<div class="note-desc">${esc(desc)}</div>` : ''}
+          </div>`;
+        }).join('') : '<div style="font-size:0.85rem;color:var(--text-soft)">Sin historial registrado.</div>'}
+      </div>
+    </div>
+  `;
+  openModal('modal-client-view');
+}
+
+// ============================================================
+// EDIT CLIENT
+// ============================================================
+function openEditModal() {
+  const c = currentClient;
+  const name = c['Nombre_apellido'] || c['Nombre / apellido'] || '';
+  const tel  = c['Numero_de_telefono'] || c['Numero de telefono'] || '';
+  const loc  = canonicalLoc(c['Localidad']) || '';
+  const tipo = c['Tienda_Online'] || c['Tienda / Online'] || 'Tienda';
+  const dir  = c['Direccion'] || '';
+
+  let detectedPrefix = '381';
+  let detectedNum = tel.replace(/\D/g,'');
+  if (detectedNum.startsWith('549')) detectedNum = detectedNum.slice(3);
+  else if (detectedNum.startsWith('54')) detectedNum = detectedNum.slice(2);
+  detectedNum = detectedNum.replace(/^0/,'').replace(/^15/,'');
+  for (const p of PHONE_PREFIXES) {
+    if (p.code !== 'OTRO' && detectedNum.startsWith(p.code)) {
+      detectedPrefix = p.code;
+      detectedNum = detectedNum.slice(p.code.length);
+      break;
+    }
+  }
+
+  document.getElementById('edit-client-body').innerHTML = `
+    <div class="form-group">
+      <label class="form-label">Nombre y Apellido</label>
+      <input class="form-input" id="ec-nombre" value="${esc(name)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Teléfono</label>
+      <div class="tel-prefix-row">
+        <select class="form-select tel-prefix-select" id="ec-tel-prefix" onchange="updateTelPreview('ec')"></select>
+        <div class="tel-number-wrap">
+          <input class="form-input" id="ec-tel-num" type="tel" value="${esc(detectedNum)}" oninput="updateTelPreview('ec')" maxlength="10">
+          <div class="tel-preview" id="ec-tel-preview"></div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Localidad</label>
+      <select class="form-select" id="ec-localidad">
+        ${TUCUMAN_LOCALIDADES.map(l => `<option value="${l}" ${l===loc?'selected':''}>${l}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Tipo</label>
+        <select class="form-select" id="ec-tipo">
+          <option ${tipo==='Tienda'?'selected':''}>Tienda</option>
+          <option ${tipo==='Online'?'selected':''}>Online</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Dirección</label>
+        <input class="form-input" id="ec-dir" value="${esc(dir)}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveEditClient()">Guardar Cambios</button>
+  `;
+  populatePrefixSelect('ec-tel-prefix');
+  document.getElementById('ec-tel-prefix').value = detectedPrefix;
+  updateTelPreview('ec');
+  openModal('modal-edit-client');
+}
+
+async function saveEditClient() {
+  const c     = currentClient;
+  const phone = buildPhoneNumber('ec-tel-prefix', 'ec-tel-num');
+  const data  = {
+    id: c['ID_Cliente'],
+    'Nombre_apellido':      document.getElementById('ec-nombre').value.trim(),
+    'Numero_de_telefono':   phone,
+    'Localidad':            document.getElementById('ec-localidad').value,
+    'Tienda_Online':        document.getElementById('ec-tipo').value,
+    'Direccion':            document.getElementById('ec-dir').value.trim(),
+    'Nombre / apellido':    document.getElementById('ec-nombre').value.trim(),
+    'Numero de telefono':   phone,
+    'Tienda / Online':      document.getElementById('ec-tipo').value,
+  };
+  try {
+    await apiPost({ action: 'updateCliente', data });
+    const idx = clients.findIndex(x => x['ID_Cliente'] === c['ID_Cliente']);
+    if (idx > -1) Object.assign(clients[idx], data);
+    currentClient = clients[idx];
+    toast('Cliente actualizado ✓', 'success');
+    closeModal('modal-edit-client');
+    openClientView(c['ID_Cliente']);
+    populateLocalidadFilter();
+    filterClients();
+  } catch(e) { showErrorModal('Error al guardar', 'No se pudo actualizar el cliente.'); }
+}
+
+// ============================================================
+// NEW CLIENT — with lock
+// ============================================================
+async function createClient() {
+  if (isSavingClient) return;
+  const nombre = document.getElementById('nc-nombre').value.trim();
+  const loc    = document.getElementById('nc-localidad').value;
+  if (!nombre || !loc) { toast('Nombre y localidad son obligatorios', 'error'); return; }
+
+  const phone = buildPhoneNumber('nc-tel-prefix', 'nc-tel-num');
+  if (!phone || phone === '549') { toast('Ingresá el número de teléfono', 'error'); return; }
+
+  isSavingClient = true;
+  const btn = document.getElementById('btn-save-client');
+  if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); btn.textContent = 'Guardando...'; }
+
+  const today       = new Date().toISOString().split('T')[0];
+  const nota        = document.getElementById('nc-nota').value.trim();
+  const notasCompra = nota ? [{ Descripcion: nota, 'Fecha de compra': today }] : [];
+
+  const data = {
+    'Nombre_apellido':            nombre,
+    'Nombre / apellido':          nombre,
+    'Numero_de_telefono':         phone,
+    'Numero de telefono':         phone,
+    'Localidad':                  loc,
+    'Tienda_Online':              document.getElementById('nc-tipo').value,
+    'Tienda / Online':            document.getElementById('nc-tipo').value,
+    'Fecha_de_inicio':            document.getElementById('nc-fecha').value || today,
+    'Fecha de inicio':            document.getElementById('nc-fecha').value || today,
+    'Direccion':                  document.getElementById('nc-dir').value.trim(),
+    'Notas_de_Compra':            notasCompra,
+    'Notas de Compra':            notasCompra,
+    'Notas_de_comunicacion':      [],
+    'Notas de comunicacion':      [],
+    'activo':                     true,
+    'Fecha_de_ultima_compra':     nota ? today : '',
+    'Fecha de ultima compra':     nota ? today : '',
+    'Fecha_de_ultima_Comunicacion': '',
+    'Fecha de ultima Cominicacion': '',
+  };
+  try {
+    const res  = await apiPost({ action: 'createCliente', data });
+    const newC = { ...data, 'ID_Cliente': res.record?.['ID_Cliente'] || data['ID_Cliente'] };
+    clients.push(newC);
+    populateLocalidadFilter();
+    filterClients();
+    closeModal('modal-new-client');
+    toast('Cliente creado ✓', 'success');
+    ['nc-nombre','nc-dir','nc-fecha','nc-nota'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('nc-tel-num').value = '';
+    updateTelPreview('nc');
+  } catch(e) {
+    showErrorModal('Error al crear cliente', 'No se pudo crear el cliente. Verifica la conexión con la API.');
+  } finally {
+    isSavingClient = false;
+    if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.textContent = 'Guardar Cliente'; }
+  }
+}
+
+// ============================================================
+// DELETE CLIENT
+// ============================================================
+async function deleteClient() {
+  const name = currentClient['Nombre_apellido'] || currentClient['Nombre / apellido'];
+  if (!confirm(`¿Eliminar a ${name}? Esta acción es lógica (se ocultará).`)) return;
+  try {
+    await apiPost({ action: 'updateCliente', data: { id: currentClient['ID_Cliente'], activo: false } });
+    const idx = clients.findIndex(x => x['ID_Cliente'] === currentClient['ID_Cliente']);
+    if (idx > -1) clients[idx]['activo'] = false;
+    closeModal('modal-client-view');
+    filterClients();
+    toast('Cliente eliminado', 'success');
+  } catch(e) { showErrorModal('Error', 'No se pudo eliminar el cliente.'); }
+}
+
+// ============================================================
+// NOTES
+// ============================================================
+function openNewNote() {
+  currentNoteClientId = currentClient['ID_Cliente'];
+  document.getElementById('nn-fecha').value = new Date().toISOString().split('T')[0];
+  document.getElementById('nn-desc').value = '';
+  selectNoteType('compra');
+  openModal('modal-new-note');
+}
+
+function selectNoteType(t) {
+  noteType = t;
+  document.getElementById('nt-compra-lbl').classList.toggle('checked', t==='compra');
+  document.getElementById('nt-com-lbl').classList.toggle('checked', t==='comunicacion');
+}
+
+async function saveNote() {
+  const c = clients.find(x => x['ID_Cliente'] === currentNoteClientId);
+  if (!c) return;
+  const fecha = document.getElementById('nn-fecha').value;
+  const desc  = document.getElementById('nn-desc').value.trim();
+  const today = new Date().toISOString().split('T')[0];
+
+  let notasCompra = [];
+  try { const raw = c['Notas_de_Compra']||c['Notas de Compra']; notasCompra = typeof raw==='string' ? JSON.parse(raw) : (raw||[]); } catch(e){ notasCompra=[]; }
+  let notasCom = [];
+  try { const raw = c['Notas_de_comunicacion']||c['Notas de comunicacion']; notasCom = typeof raw==='string' ? JSON.parse(raw) : (raw||[]); } catch(e){ notasCom=[]; }
+
+  const data = { id: c['ID_Cliente'] };
+  if (noteType === 'compra') {
+    notasCompra.push({ 'Fecha de compra': fecha, 'Descripcion': desc });
+    data['Notas_de_Compra']           = notasCompra;
+    data['Notas de Compra']           = notasCompra;
+    data['Fecha_de_ultima_compra']    = today;
+    data['Fecha de ultima compra']    = today;
+  } else {
+    notasCom.push({ 'Fecha': fecha, 'Descripcion': desc });
+    data['Notas_de_comunicacion']         = notasCom;
+    data['Notas de comunicacion']         = notasCom;
+    data['Fecha_de_ultima_Comunicacion']  = today;
+    data['Fecha de ultima Cominicacion']  = today;
+  }
+
+  try {
+    await apiPost({ action: 'updateCliente', data });
+    Object.assign(c, data);
+    closeModal('modal-new-note');
+    openClientView(c['ID_Cliente']);
+    toast('Nota guardada ✓', 'success');
+    filterClients();
+  } catch(e) { showErrorModal('Error', 'No se pudo guardar la nota.'); }
+}
+
+// ============================================================
+// CUPONES — helpers
+// ============================================================
+function getCuponCode(c) { return c['Code'] || c['n°/codigo de cupon'] || c['Cupon_ID'] || ''; }
+function getCuponId(c)   { return c['Cupon_ID'] || c['n°/codigo de cupon'] || c['Code'] || ''; }
+function getCuponClientId(c) { return c['id_cliente'] || c['cliente al que se le mando'] || ''; }
+function getCuponClientName(c) {
+  if (c['nombre_cliente']) return c['nombre_cliente'];
+  const cid = getCuponClientId(c);
+  if (!cid) return '';
+  const client = clients.find(x => x['ID_Cliente'] === cid);
+  return client ? (client['Nombre_apellido'] || client['Nombre / apellido'] || cid) : cid;
+}
+function isRedeemed(c) { return c['redimido'] === true || c['redimido'] === 'TRUE'; }
+function isActive(c)   { return c['activo'] !== false && c['activo'] !== 'FALSE'; }
+
+// ============================================================
+// CUPONES RENDER
+// ============================================================
+function setCuponMode(mode) {
+  cuponMode = mode;
+  selectedCuponIds.clear();
+  const listEl = document.getElementById('cupon-list');
+  if (listEl) listEl.classList.toggle('bulk-mode', mode === 'bulk');
+  document.getElementById('mode-btn-normal').classList.toggle('active', mode === 'normal');
+  document.getElementById('mode-btn-bulk').classList.toggle('active', mode === 'bulk');
+  updateBulkBar();
+  filterCupones();
+}
+
+function updateBulkBar() {
+  const bar   = document.getElementById('bulk-action-bar');
+  const count = selectedCuponIds.size;
+  if (cuponMode === 'bulk' && count > 0) {
+    bar.classList.add('visible');
+    document.getElementById('bulk-count-label').textContent = `${count} seleccionado${count>1?'s':''}`;
+  } else {
+    bar.classList.remove('visible');
+  }
+}
+
+function toggleCuponSelect(cuponId) {
+  if (selectedCuponIds.has(cuponId)) selectedCuponIds.delete(cuponId);
+  else selectedCuponIds.add(cuponId);
+  updateBulkBar();
+  const card = document.querySelector(`[data-cupon-id="${CSS.escape(cuponId)}"]`);
+  if (card) card.classList.toggle('selected', selectedCuponIds.has(cuponId));
+  const cb = document.querySelector(`[data-cupon-cb="${CSS.escape(cuponId)}"]`);
+  if (cb) cb.checked = selectedCuponIds.has(cuponId);
+}
+
+function renderCupones() { filterCupones(); }
+
+function filterCupones() {
+  const q = (document.getElementById('cupon-search')?.value || '').toLowerCase().trim();
+  const list = cupones.filter(c => {
+    if (!q) return true;
+    const code   = getCuponCode(c).toLowerCase();
+    const cname  = getCuponClientName(c).toLowerCase();
+    return code.includes(q) || cname.includes(q);
+  });
+  const el = document.getElementById('cupon-list');
+  if (!el) return;
+  el.classList.toggle('bulk-mode', cuponMode === 'bulk');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">🎟</div><p>No hay cupones registrados.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => cuponCardHTML(c)).join('');
+}
+
+function cuponCardHTML(c) {
+  const code       = getCuponCode(c);
+  const cuponId    = getCuponId(c);
+  const redeemed   = isRedeemed(c);
+  const clientName = getCuponClientName(c);
+  const clientId   = getCuponClientId(c);
+  const isSelected = selectedCuponIds.has(cuponId);
+  return `<div class="cupon-card-wrap">
+    <input type="checkbox" class="cupon-cb" ${isSelected?'checked':''} data-cupon-cb="${esc(cuponId)}" onchange="toggleCuponSelect('${esc(cuponId)}')">
+    <div class="cupon-card${isSelected?' selected':''}" data-cupon-id="${esc(cuponId)}">
+      <div style="flex:1;min-width:0">
+        <div class="cupon-code">${esc(code)}</div>
+        ${clientName ? `<div class="cupon-client">👤 ${esc(clientName)}</div>` : ''}
+        <div class="cupon-client-actions">
+          ${clientId ? `<button class="btn btn-outline btn-sm" style="padding:3px 8px;font-size:0.7rem" onclick="openClientView('${esc(clientId)}');event.stopPropagation()">Ver cliente</button>` : ''}
+          <button class="btn btn-secondary btn-sm" style="padding:3px 8px;font-size:0.7rem" onclick="openEditCupon('${esc(cuponId)}');event.stopPropagation()">✏️ Editar</button>
+        </div>
+      </div>
+      <div class="cupon-actions">
+        <span class="cupon-status ${redeemed ? 'redeemed' : 'active'}">${redeemed ? 'Canjeado' : 'Activo'}</span>
+        ${!redeemed ? `<button class="btn btn-danger btn-sm" onclick="redeemSingleCupon('${esc(cuponId)}');event.stopPropagation()">Canjear</button>` : ''}
+        <button class="btn btn-danger btn-sm" style="background:#fef2f2;color:#dc2626" onclick="deleteSingleCupon('${esc(cuponId)}');event.stopPropagation()">🗑</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// EDIT CUPON
+// ============================================================
+function openEditCupon(cuponId) {
+  const c = cupones.find(x => getCuponId(x) === cuponId);
+  if (!c) return;
+  const code     = getCuponCode(c);
+  const cid      = getCuponClientId(c);
+  const redeemed = isRedeemed(c);
+  const fReclaim = c['fecha_reclamo'] || '';
+
+  document.getElementById('edit-cupon-body').innerHTML = `
+    <div class="form-group">
+      <label class="form-label">Código del cupón</label>
+      <input class="form-input" id="ecp-code" value="${esc(code)}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cliente asignado</label>
+      <select class="form-select" id="ecp-client">
+        <option value="">Sin cliente</option>
+        ${clients.filter(x=>x['activo']!==false&&x['activo']!=='FALSE').map(x => {
+          const xname = x['Nombre_apellido']||x['Nombre / apellido']||x['ID_Cliente'];
+          return `<option value="${esc(x['ID_Cliente'])}" ${x['ID_Cliente']===cid?'selected':''}>${esc(xname)}</option>`;
+        }).join('')}
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Estado</label>
+        <select class="form-select" id="ecp-redimido">
+          <option value="false" ${!redeemed?'selected':''}>Activo</option>
+          <option value="true" ${redeemed?'selected':''}>Canjeado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Fecha de reclamo</label>
+        <input class="form-input" id="ecp-fecha" type="datetime-local" value="${fReclaim?fReclaim.slice(0,16):''}">
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" onclick="saveEditCupon('${esc(cuponId)}')">Guardar Cambios</button>
+  `;
+  openModal('modal-edit-cupon');
+}
+
+async function saveEditCupon(cuponId) {
+  const c         = cupones.find(x => getCuponId(x) === cuponId);
+  if (!c) return;
+  const newCode   = document.getElementById('ecp-code').value.trim();
+  const clientId  = document.getElementById('ecp-client').value;
+  const redimido  = document.getElementById('ecp-redimido').value === 'true';
+  const fecha     = document.getElementById('ecp-fecha').value;
+  const clientRec = clients.find(x=>x['ID_Cliente']===clientId);
+  const clientName = clientId ? (clientRec?.['Nombre_apellido'] || clientRec?.['Nombre / apellido'] || '') : '';
+
+  const data = {
+    id: cuponId, Code: newCode, id_cliente: clientId, nombre_cliente: clientName,
+    redimido, activo: !redimido,
+    fecha_reclamo: fecha ? new Date(fecha).toISOString() : '',
+    'n°/codigo de cupon': newCode, 'cliente al que se le mando': clientId,
+  };
+  try {
+    await apiPost({ action: 'updateCupon', data });
+    Object.assign(c, data);
+    closeModal('modal-edit-cupon');
+    renderCupones();
+    toast('Cupón actualizado ✓', 'success');
+  } catch(e) { showErrorModal('Error', 'No se pudo actualizar el cupón.'); }
+}
+
+// ============================================================
+// ADD CUPONS
+// ============================================================
+function switchCuponTab(tab, btn) {
+  ['bulk','generate','single'].forEach(t => {
+    document.getElementById(`cupon-tab-${t}`).style.display = t===tab ? 'flex' : 'none';
+  });
+  document.querySelectorAll('.inner-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// Parse codes from a raw string (comma, space, newline separated), min 3 chars each
+function parseCodesFromString(raw) {
+  return raw
+    .split(/[\n,\s]+/)
+    .map(s => s.trim())
+    .filter(s => s.length >= 3);
+}
+
+// Desktop: key events (Enter / comma)
+function handleBulkInputKey(e) {
+  const input = document.getElementById('bulk-input');
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const raw = input.value.replace(/,/g,'').trim();
+    if (raw.length >= 3) addBulkCode(raw);
+    input.value = '';
+  }
+}
+
+// Mobile: fires on every character change — detect separator chars inside the value
+function handleBulkInputChange(e) {
+  const input = document.getElementById('bulk-input');
+  const val   = input.value;
+  // If the current value contains a comma, newline, or ends with a space → split and tag
+  if (/[,\n]/.test(val) || (val.endsWith(' ') && val.trim().length >= 3)) {
+    const codes = parseCodesFromString(val);
+    codes.forEach(c => addBulkCode(c));
+    input.value = '';
+  }
+}
+
+function addBulkCode(code) {
+  if (code && !bulkCodes.includes(code)) { bulkCodes.push(code); renderBulkTags(); }
+}
+
+function renderBulkTags() {
+  document.getElementById('bulk-tags-display').innerHTML = bulkCodes.map((c,i) =>
+    `<span class="bulk-tag">${esc(c)} <button onclick="removeBulkCode(${i})">×</button></span>`
+  ).join('');
+}
+
+function removeBulkCode(i) { bulkCodes.splice(i,1); renderBulkTags(); }
+
+async function saveBulkCupons() {
+  if (isSavingBulkCupons) return;
+
+  // Also parse anything still typed in the input field
+  const inputEl  = document.getElementById('bulk-input');
+  const leftover = inputEl.value.trim();
+  if (leftover) {
+    parseCodesFromString(leftover).forEach(c => addBulkCode(c));
+    inputEl.value = '';
+  }
+
+  if (!bulkCodes.length) { toast('Ingresá al menos un código', 'error'); return; }
+
+  isSavingBulkCupons = true;
+  const btn = document.getElementById('btn-save-bulk');
+  if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); btn.textContent = 'Guardando...'; }
+
+  // Close modal immediately so user doesn't angry-click
+  closeModal('modal-add-cupons');
+
+  let ok = 0;
+  const codesToAdd = [...bulkCodes];
+  for (const code of codesToAdd) {
+    try {
+      await apiPost({ action: 'createCupon', data: { Code: code, redimido: false, activo: true, id_cliente: '', nombre_cliente: '' } });
+      cupones.push({ Code: code, 'n°/codigo de cupon': code, redimido: false, activo: true, id_cliente: '', nombre_cliente: '' });
+      ok++;
+    } catch(e) {}
+  }
+  bulkCodes = [];
+  renderBulkTags();
+  renderCupones();
+  toast(`${ok} cupón(es) agregado(s) ✓`, 'success');
+
+  isSavingBulkCupons = false;
+  if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.textContent = 'Agregar Cupones'; }
+}
+
+function previewGenerate() {
+  const prefix = document.getElementById('gen-prefix').value.trim() || 'PROMO-';
+  const count  = parseInt(document.getElementById('gen-count').value) || 0;
+  if (!count) { toast('Ingresá una cantidad', 'error'); return; }
+  generatedPreviewCodes = Array.from({length: count}, (_,i) => `${prefix}${String(i+1).padStart(3,'0')}`);
+  const prev = document.getElementById('gen-preview');
+  prev.style.display = 'block';
+  prev.textContent   = generatedPreviewCodes.slice(0,5).join(', ') + (count > 5 ? ` ... +${count-5} más` : '');
+}
+
+async function saveGeneratedCupons() {
+  if (isSavingGeneratedCupons) return;
+  if (!generatedPreviewCodes.length) { previewGenerate(); if (!generatedPreviewCodes.length) return; }
+
+  isSavingGeneratedCupons = true;
+  const btn = document.getElementById('btn-save-generate');
+  if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); btn.textContent = 'Guardando...'; }
+
+  // Close modal immediately
+  closeModal('modal-add-cupons');
+
+  let ok = 0;
+  for (const code of generatedPreviewCodes) {
+    try {
+      await apiPost({ action: 'createCupon', data: { Code: code, redimido: false, activo: true, id_cliente: '', nombre_cliente: '' } });
+      cupones.push({ Code: code, 'n°/codigo de cupon': code, redimido: false, activo: true });
+      ok++;
+    } catch(e) {}
+  }
+  generatedPreviewCodes = [];
+  document.getElementById('gen-preview').style.display = 'none';
+  document.getElementById('gen-prefix').value = '';
+  document.getElementById('gen-count').value  = '';
+  renderCupones();
+  toast(`${ok} cupones generados ✓`, 'success');
+
+  isSavingGeneratedCupons = false;
+  if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.textContent = 'Generar y Guardar'; }
+}
+
+async function saveSingleCupon() {
+  if (isSavingSingleCupon) return;
+  const code = document.getElementById('single-code').value.trim();
+  if (!code) { toast('Ingresá un código', 'error'); return; }
+
+  isSavingSingleCupon = true;
+  const btn = document.getElementById('btn-save-single');
+  if (btn) { btn.disabled = true; btn.classList.add('btn-loading'); btn.textContent = 'Guardando...'; }
+
+  closeModal('modal-add-cupons');
+
+  try {
+    await apiPost({ action: 'createCupon', data: { Code: code, redimido: false, activo: true, id_cliente: '', nombre_cliente: '' } });
+    cupones.push({ Code: code, 'n°/codigo de cupon': code, redimido: false, activo: true });
+    document.getElementById('single-code').value = '';
+    renderCupones();
+    toast('Cupón agregado ✓', 'success');
+  } catch(e) { showErrorModal('Error', 'No se pudo crear el cupón.'); }
+
+  isSavingSingleCupon = false;
+  if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.textContent = 'Agregar Cupón'; }
+}
+
+// ============================================================
+// REDEEM — search by code AND client name
+// ============================================================
+function openRedeemModal() { openModal('modal-redeem'); }
+
+function filterRedeemList() {
+  const q    = document.getElementById('redeem-search').value.toLowerCase().trim();
+  const list = cupones.filter(c => {
+    if (isRedeemed(c) || !isActive(c)) return false;
+    if (!q) return true;
+    const code  = getCuponCode(c).toLowerCase();
+    const cname = getCuponClientName(c).toLowerCase();
+    return code.includes(q) || cname.includes(q);
+  });
+  const el = document.getElementById('redeem-list');
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px"><p>No hay cupones activos que coincidan.</p></div>';
+    return;
+  }
+  el.innerHTML = list.map(c => {
+    const cname = getCuponClientName(c);
+    return `<div class="cupon-card">
+      <div>
+        <div class="cupon-code">${esc(getCuponCode(c))}</div>
+        ${cname ? `<div class="cupon-client">👤 ${esc(cname)}</div>` : ''}
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="redeemSingleCupon('${esc(getCuponId(c))}')">Canjear</button>
+    </div>`;
+  }).join('');
+}
+
+async function redeemSingleCupon(cuponId) {
+  if (!confirm(`¿Marcar "${cuponId}" como canjeado?`)) return;
+  const today = new Date().toISOString();
+  try {
+    await apiPost({ action: 'updateCupon', data: { id: cuponId, redimido: true, activo: false, fecha_reclamo: today } });
+    const idx = cupones.findIndex(c => getCuponId(c) === cuponId);
+    if (idx > -1) { cupones[idx]['redimido'] = true; cupones[idx]['activo'] = false; cupones[idx]['fecha_reclamo'] = today; }
+    filterRedeemList();
+    renderCupones();
+    toast('Cupón canjeado ✓', 'success');
+  } catch(e) { showErrorModal('Error', 'No se pudo canjear el cupón.'); }
+}
+
+async function deleteSingleCupon(cuponId) {
+  if (!confirm(`¿Eliminar el cupón "${cuponId}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    await apiPost({ action: 'deleteCupon', data: { id: cuponId } });
+    cupones = cupones.filter(c => getCuponId(c) !== cuponId);
+    renderCupones();
+    toast('Cupón eliminado ✓', 'success');
+  } catch(e) { showErrorModal('Error', 'No se pudo eliminar el cupón.'); }
+}
+
+// ============================================================
+// BULK CUPON ACTIONS
+// ============================================================
+async function bulkRedeemSelected() {
+  const ids = [...selectedCuponIds];
+  if (!ids.length) return;
+  if (!confirm(`¿Canjear ${ids.length} cupón(es) seleccionado(s)?`)) return;
+  const today = new Date().toISOString();
+  try {
+    await apiPost({ action: 'bulkCupon', data: { ids, updateFields: { redimido: true, activo: false, fecha_reclamo: today } } });
+    ids.forEach(id => {
+      const idx = cupones.findIndex(c => getCuponId(c) === id);
+      if (idx > -1) { cupones[idx]['redimido'] = true; cupones[idx]['activo'] = false; }
+    });
+    selectedCuponIds.clear();
+    setCuponMode('normal');
+    toast(`${ids.length} cupón(es) canjeado(s) ✓`, 'success');
+  } catch(e) { showErrorModal('Error', 'No se pudo realizar el canje masivo.'); }
+}
+
+async function bulkDeleteSelected() {
+  const ids = [...selectedCuponIds];
+  if (!ids.length) return;
+  if (!confirm(`¿Eliminar ${ids.length} cupón(es)? Esta acción no se puede deshacer.`)) return;
+  let ok = 0;
+  for (const id of ids) {
+    try { await apiPost({ action: 'deleteCupon', data: { id } }); ok++; } catch(e) {}
+  }
+  cupones = cupones.filter(c => !ids.includes(getCuponId(c)));
+  selectedCuponIds.clear();
+  setCuponMode('normal');
+  toast(`${ok} cupón(es) eliminado(s) ✓`, 'success');
+}
+
+// ============================================================
+// POOL PICKER — custom selection for "Usar lista"
+// ============================================================
+function renderPoolPicker() {
+  const q    = (document.getElementById('pool-picker-search')?.value || '').toLowerCase().trim();
+  const avail = cupones.filter(c => !isRedeemed(c) && isActive(c));
+  const shown = avail.filter(c => !q || getCuponCode(c).toLowerCase().includes(q) || getCuponClientName(c).toLowerCase().includes(q));
+  const el   = document.getElementById('pool-picker-list');
+  if (!el) return;
+  if (!shown.length) {
+    el.innerHTML = `<div style="padding:10px;font-size:0.8rem;color:var(--text-muted);text-align:center">No hay cupones activos${q?' que coincidan':''}</div>`;
+    updatePoolSummary();
+    return;
+  }
+  el.innerHTML = shown.map(c => {
+    const id   = getCuponId(c);
+    const code = getCuponCode(c);
+    const cname = getCuponClientName(c);
+    const checked = selectedPoolCuponIds.has(id);
+    return `<label class="pool-picker-item">
+      <input type="checkbox" ${checked?'checked':''} onchange="togglePoolCupon('${esc(id)}')">
+      <span class="pi-code">${esc(code)}</span>
+      ${cname ? `<span style="font-size:0.72rem;color:var(--text-muted)">· ${esc(cname)}</span>` : ''}
+      <span style="flex:1"></span>
+      <span class="pi-status">Activo</span>
+    </label>`;
+  }).join('');
+  updatePoolSummary();
+}
+
+function filterPoolPicker() { renderPoolPicker(); }
+
+function togglePoolCupon(id) {
+  if (selectedPoolCuponIds.has(id)) selectedPoolCuponIds.delete(id);
+  else selectedPoolCuponIds.add(id);
+  updatePoolSummary();
+}
+
+function updatePoolSummary() {
+  const el = document.getElementById('pool-selected-summary');
+  if (el) el.textContent = `${selectedPoolCuponIds.size} cupón(es) seleccionado(s)`;
+}
+
+// ============================================================
+// CUSTOM VARIABLES
+// ============================================================
+function addCustomVar() {
+  customVars.push({ name: '', values: [''], cycleIndex: 0 });
+  renderCustomVars();
+}
+
+function renderCustomVars() {
+  const container = document.getElementById('custom-vars-list');
+  if (!container) return;
+  container.innerHTML = customVars.map((v, vi) => `
+    <div class="custom-var-container">
+      <div class="custom-var-name-row">
+        <span class="custom-var-name-label">Nombre:</span>
+        <input class="form-input" style="flex:1;font-family:monospace" placeholder="ej: saludo, emoji" value="${esc(v.name)}"
+          oninput="updateCustomVarName(${vi}, this.value)">
+        <button class="custom-var-remove" onclick="removeCustomVar(${vi})">✕</button>
+      </div>
+      <div style="font-size:0.72rem;color:var(--text-soft);margin-bottom:6px">
+        Se inserta como <strong>&amp;${esc(v.name||'?')}&amp;</strong> — elige cíclicamente entre las opciones.
+      </div>
+      <div class="custom-var-inputs">
+        ${v.values.map((val, oi) => `
+          <div class="custom-var-input-row">
+            <input class="form-input" placeholder="Opción ${oi+1}" value="${esc(val)}" oninput="updateCustomVarValue(${vi},${oi},this.value)">
+            ${v.values.length > 1 ? `<button class="custom-var-remove" onclick="removeCustomVarValue(${vi},${oi})">✕</button>` : ''}
+          </div>`).join('')}
+      </div>
+      <button class="custom-var-add-btn" onclick="addCustomVarValue(${vi})">
+        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Agregar opción
+      </button>
+    </div>
+  `).join('');
+  updateCustomVarChips();
+}
+
+function updateCustomVarName(vi, name) { customVars[vi].name = name.trim(); updateCustomVarChips(); }
+function updateCustomVarValue(vi, oi, val) { customVars[vi].values[oi] = val; }
+function addCustomVarValue(vi) { customVars[vi].values.push(''); renderCustomVars(); }
+function removeCustomVarValue(vi, oi) { if (customVars[vi].values.length <= 1) return; customVars[vi].values.splice(oi,1); renderCustomVars(); }
+function removeCustomVar(vi) { customVars.splice(vi,1); renderCustomVars(); }
+
+function updateCustomVarChips() {
+  const row = document.getElementById('var-chips-row');
+  if (!row) return;
+  row.querySelectorAll('.var-chip.custom').forEach(el => el.remove());
+  customVars.forEach(v => {
+    if (v.name) {
+      const chip = document.createElement('span');
+      chip.className = 'var-chip custom';
+      chip.textContent = `🔀 &${v.name}&`;
+      chip.onclick = () => insertVar(`&${v.name}&`);
+      row.appendChild(chip);
+    }
+  });
+}
+
+function resolveCustomVars(message) {
+  let msg = message;
+  customVars.forEach(v => {
+    if (!v.name) return;
+    const validVals = v.values.filter(x => x.trim() !== '');
+    if (!validVals.length) return;
+    const val = validVals[v.cycleIndex % validVals.length];
+    v.cycleIndex++;
+    const re = new RegExp(`&${v.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}&`, 'gi');
+    msg = msg.replace(re, val);
+  });
+  return msg;
+}
+
+// ============================================================
+// TEMPLATE MODAL
+// ============================================================
+function selectCuponOpt(opt) {
+  activeCuponOpt = opt;
+  ['none','generate','pool'].forEach(o => {
+    document.getElementById(`cupon-opt-${o}-lbl`).classList.toggle('checked', o===opt);
+  });
+  document.getElementById('tmpl-cupon-generate').style.display = opt==='generate' ? 'flex' : 'none';
+  document.getElementById('tmpl-cupon-pool').style.display     = opt==='pool'     ? 'flex' : 'none';
+  if (opt === 'pool') renderPoolPicker();
+}
+
+function insertVar(v) {
+  const ta = document.getElementById('tmpl-message');
+  if (!ta) return;
+  const start = ta.selectionStart;
+  const end   = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + v.length;
+  ta.focus();
+}
+
+async function createTemplate() {
+  const name = document.getElementById('tmpl-name').value.trim();
+  const msg  = document.getElementById('tmpl-message').value.trim();
+  if (!name) { toast('Ingresá un nombre para la plantilla', 'error'); return; }
+  if (!msg)  { toast('Escribe el mensaje de la plantilla', 'error');  return; }
+
+  customVars.forEach(v => { v.values = v.values.filter(x => x.trim() !== ''); if (!v.values.length) v.values = ['']; });
+
+  let cuponConfig = { type: activeCuponOpt };
+  if (activeCuponOpt === 'generate') {
+    cuponConfig.prefix = document.getElementById('tmpl-gen-prefix').value.trim() || 'MSG-';
+  }
+  if (activeCuponOpt === 'pool') {
+    const poolIds = [...selectedPoolCuponIds];
+    if (!poolIds.length) {
+      showErrorModal('Sin cupones seleccionados', 'Seleccioná al menos un cupón de la lista antes de crear la plantilla.');
+      return;
+    }
+    cuponConfig.pool      = poolIds;
+    cuponConfig.poolIndex = 0;
+  }
+
+  activeTemplate = { name, message: msg, cuponConfig, sentToday: [] };
+  customVars.forEach(v => v.cycleIndex = 0);
+  closeModal('modal-template');
+  showTemplateView();
+}
+
+// ============================================================
+// TEMPLATE SEND VIEW
+// ============================================================
+function showTemplateView() {
+  document.getElementById('cupon-main-view').style.display   = 'none';
+  document.getElementById('template-send-view').style.display = 'flex';
+  document.getElementById('fab-plantilla').style.display     = 'none';
+  document.getElementById('tv-template-name').textContent    = activeTemplate.name;
+  const hasCupons = activeTemplate.cuponConfig.type !== 'none';
+  document.getElementById('tv-template-desc').textContent = hasCupons
+    ? (activeTemplate.cuponConfig.type === 'pool'
+        ? `Con cupones de lista (${activeTemplate.cuponConfig.pool?.length || 0} seleccionados)`
+        : 'Generando cupones únicos por cliente')
+    : 'Sin cupones';
+  if (hasCupons && activeTemplate.cuponConfig.type === 'pool') {
+    document.getElementById('tv-pool-info').style.display = 'block';
+    updateTVPoolInfo();
+  }
+  showAllTemplateClients = false;
+  document.getElementById('btn-show-all').textContent = 'Mostrar todos';
+  populateLocalidadFilter();
+  filterTemplateClients();
+}
+
+function updateTVPoolInfo() {
+  const remaining = (activeTemplate?.cuponConfig?.pool?.length || 0) - (activeTemplate?.cuponConfig?.poolIndex || 0);
+  document.getElementById('tv-pool-text').textContent = remaining > 0
+    ? `${remaining} cupón(es) restantes en la lista`
+    : '⚠️ Sin cupones en la lista — cargá más antes de continuar';
+}
+
+function toggleShowAll() {
+  showAllTemplateClients = !showAllTemplateClients;
+  document.getElementById('btn-show-all').textContent = showAllTemplateClients ? 'Solo pendientes' : 'Mostrar todos';
+  filterTemplateClients();
+}
+
+function filterTemplateClients() {
+  const q    = (document.getElementById('tv-search')?.value || '').toLowerCase().trim();
+  const tipo = document.getElementById('tv-filter-tipo')?.value || '';
+  const loc  = document.getElementById('tv-filter-localidad')?.value || '';
+  const today = new Date().toISOString().split('T')[0];
+
+  let filtered = getActiveClients().filter(c => {
+    const cTipo = c['Tienda_Online'] || c['Tienda / Online'] || '';
+    const cLoc  = canonicalLoc(c['Localidad']);
+    if (tipo && cTipo !== tipo) return false;
+    if (loc  && cLoc !== loc)  return false;
+    if (q) {
+      const name = c['Nombre_apellido'] || c['Nombre / apellido'] || '';
+      const hay  = [name, c['Localidad'], c['Numero_de_telefono']||c['Numero de telefono']].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  if (!showAllTemplateClients) {
+    filtered = filtered.filter(c => {
+      const lastCom = c['Fecha_de_ultima_Comunicacion'] || c['Fecha de ultima Cominicacion'];
+      if (lastCom && String(lastCom).startsWith(today)) return false;
+      if (activeTemplate?.sentToday?.includes(c['ID_Cliente'])) return false;
+      return true;
+    });
+  }
+
+  activeTemplateClients = filtered;
+  renderTemplateClientList(filtered);
+}
+
+function renderTemplateClientList(list) {
+  const el    = document.getElementById('tv-client-list');
+  const today = new Date().toISOString().split('T')[0];
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">✅</div><p>Todos los clientes ya fueron contactados hoy.</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(c => {
+    const name     = c['Nombre_apellido'] || c['Nombre / apellido'] || 'Sin nombre';
+    const initials = name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const tel      = c['Numero_de_telefono'] || c['Numero de telefono'] || '';
+    const loc      = canonicalLoc(c['Localidad']) || '';
+    const lastCom  = c['Fecha_de_ultima_Comunicacion'] || c['Fecha de ultima Cominicacion'];
+    const sentToday = (lastCom && String(lastCom).startsWith(today)) || activeTemplate?.sentToday?.includes(c['ID_Cliente']);
+    return `<div class="client-card" onclick='sendTemplateToClient(${JSON.stringify(c['ID_Cliente'])})'>
+      <div class="client-avatar">${initials}</div>
+      <div class="client-info">
+        <div class="client-name">${esc(name)}${sentToday ? '<span class="tv-sent-badge">Enviado hoy</span>' : ''}</div>
+        <div style="font-size:0.78rem;color:var(--text-muted)">${esc(tel)}</div>
+        <div class="client-meta">${loc ? `<span class="meta-tag">${esc(loc)}</span>` : ''}</div>
+      </div>
+      <div>
+        <button class="btn btn-wa btn-sm">
+          <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M13 0C5.373 0 0 5.373 0 12c0 2.122.558 4.112 1.528 5.836L0 24l6.336-1.656A11.94 11.94 0 0013 24c6.627 0 12-5.373 12-12S19.627 0 13 0zm0 22c-1.86 0-3.604-.5-5.112-1.373l-.366-.217-3.764.987.987-3.656-.236-.38A9.94 9.94 0 013 12C3 7.029 7.029 3 12 3s10 4.029 10 9-4.03 10-9 10z"/></svg>
+          WA
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// LOADING SCREEN HELPERS
+// ============================================================
+const WA_STEPS = [
+  'Guardando comunicación...',
+  'Generando cupón único...',
+  'Preparando enlace de WhatsApp...',
+];
+let waStepInterval = null;
+
+function showWALoading() {
+  isSendingWA = true;
+  const screen = document.getElementById('wa-loading-screen');
+  screen.classList.add('visible');
+  let si = 0;
+  document.getElementById('wa-loading-step').textContent = WA_STEPS[0];
+  waStepInterval = setInterval(() => {
+    si = (si + 1) % WA_STEPS.length;
+    document.getElementById('wa-loading-step').textContent = WA_STEPS[si];
+  }, 1200);
+}
+
+function hideWALoading() {
+  isSendingWA = false;
+  clearInterval(waStepInterval);
+  document.getElementById('wa-loading-screen').classList.remove('visible');
+}
+
+// ============================================================
+// SEND TEMPLATE TO CLIENT — with loading screen + repeat-send warning
+// ============================================================
+async function sendTemplateToClient(clientId) {
+  if (isSendingWA) return;
+
+  const c = clients.find(x => x['ID_Cliente'] === clientId);
+  if (!c) return;
+
+  // Check if already sent today → warn
+  const today   = new Date().toISOString().split('T')[0];
+  const lastCom = c['Fecha_de_ultima_Comunicacion'] || c['Fecha de ultima Cominicacion'];
+  const sentAlready = (lastCom && String(lastCom).startsWith(today)) || activeTemplate?.sentToday?.includes(clientId);
+  if (sentAlready) {
+    const ok = confirm(`⚠️ Hoy ya le enviaste un mensaje a ${c['Nombre_apellido']||c['Nombre / apellido']}.\n¿Querés enviarle otro igual?`);
+    if (!ok) return;
+  }
+
+  let tel = String(c['Numero_de_telefono'] || c['Numero de telefono'] || '').replace(/\D/g,'');
+  if (!tel) {
+    showErrorModal('Teléfono faltante', `El cliente ${c['Nombre_apellido']||c['Nombre / apellido']||clientId} no tiene número. Editalo y agregá su teléfono.`);
+    return;
+  }
+  if (!tel.startsWith('549')) {
+    if (tel.startsWith('54')) tel = '549' + tel.slice(2);
+    else if (tel.startsWith('0')) tel = '549' + tel.slice(1);
+    else tel = '549' + tel;
+  }
+
+  showWALoading();
+
+  const tmpl = activeTemplate;
+  let cuponCode = '';
+
+  if (tmpl.cuponConfig.type === 'generate') {
+    const prefix = tmpl.cuponConfig.prefix || 'MSG-';
+    cuponCode = `${prefix}${clientId}`;
+    try {
+      await apiPost({ action: 'createCupon', data: { Code: cuponCode, id_cliente: clientId, nombre_cliente: c['Nombre_apellido']||c['Nombre / apellido']||'', redimido: false, activo: true } });
+      cupones.push({ Code: cuponCode, 'n°/codigo de cupon': cuponCode, id_cliente: clientId, nombre_cliente: c['Nombre_apellido']||c['Nombre / apellido']||'', redimido: false, activo: true });
+      renderCupones();
+    } catch(e) { hideWALoading(); showErrorModal('Error al generar cupón', 'No se pudo crear el cupón para este cliente.'); return; }
+  } else if (tmpl.cuponConfig.type === 'pool') {
+    const pool = tmpl.cuponConfig.pool;
+    const idx  = tmpl.cuponConfig.poolIndex;
+    if (idx >= pool.length) {
+      hideWALoading();
+      showErrorModal('Sin cupones', '⚠️ Ya no quedan cupones disponibles en la lista. Agregá más y creá una nueva plantilla.');
+      return;
+    }
+    cuponCode = pool[idx];
+    tmpl.cuponConfig.poolIndex++;
+    try {
+      await apiPost({ action: 'updateCupon', data: { id: cuponCode, id_cliente: clientId, nombre_cliente: c['Nombre_apellido']||c['Nombre / apellido']||'' } });
+      const ci = cupones.findIndex(x => getCuponId(x) === cuponCode);
+      if (ci > -1) { cupones[ci]['id_cliente'] = clientId; cupones[ci]['nombre_cliente'] = c['Nombre_apellido']||c['Nombre / apellido']||''; }
+    } catch(e) {}
+    updateTVPoolInfo();
+    renderCupones();
+  }
+
+  // Resolve message
+  let msg = tmpl.message;
+  msg = msg.replace(/&nombre&/gi,   c['Nombre_apellido']||c['Nombre / apellido']||'');
+  msg = msg.replace(/&localidad&/gi, canonicalLoc(c['Localidad'])||'');
+  msg = msg.replace(/&telefono&/gi, tel);
+  msg = msg.replace(/&cupon&/gi,    cuponCode);
+  msg = resolveCustomVars(msg);
+
+  // Update contact history
+  let notasCom = [];
+  try { const raw = c['Notas_de_comunicacion']||c['Notas de comunicacion']; notasCom = typeof raw==='string' ? JSON.parse(raw) : (raw||[]); } catch(e){ notasCom=[]; }
+  notasCom.push({ 'Fecha': today, 'Descripcion': msg.slice(0,120), 'Plantilla': tmpl.name });
+  try {
+    await apiPost({ action: 'updateCliente', data: {
+      id: clientId,
+      'Fecha_de_ultima_Comunicacion': today,
+      'Fecha de ultima Cominicacion': today,
+      'Notas_de_comunicacion': notasCom,
+      'Notas de comunicacion': notasCom,
+    }});
+    c['Fecha_de_ultima_Comunicacion'] = today;
+    c['Fecha de ultima Cominicacion'] = today;
+    c['Notas_de_comunicacion'] = notasCom;
+    c['Notas de comunicacion'] = notasCom;
+  } catch(e) {}
+
+  tmpl.sentToday.push(clientId);
+
+  const waUrl = `https://wa.me/${tel}?text=${encodeURIComponent(msg)}`;
+
+  hideWALoading();
+  filterTemplateClients();
+  window.open(waUrl, '_blank');
+  toast(`Abriendo WhatsApp para ${c['Nombre_apellido']||c['Nombre / apellido']}`, 'success');
+}
+
+function exitTemplateView() {
+  activeTemplate           = null;
+  showAllTemplateClients   = false;
+  selectedPoolCuponIds.clear();
+  document.getElementById('template-send-view').style.display = 'none';
+  document.getElementById('cupon-main-view').style.display    = 'block';
+  document.getElementById('fab-plantilla').style.display      = 'flex';
+  document.getElementById('tv-pool-info').style.display       = 'none';
+  renderCupones();
+}
+
+// ============================================================
+// MODALS
+// ============================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  if (id === 'modal-redeem')   filterRedeemList();
+  if (id === 'modal-template') { renderPoolPicker(); renderCustomVars(); }
+
+  if (id === 'modal-add-cupons') {
+    // Reset state
+    bulkCodes = []; renderBulkTags();
+    document.getElementById('bulk-input').value = '';
+    generatedPreviewCodes = [];
+    const prev = document.getElementById('gen-preview');
+    if (prev) prev.style.display = 'none';
+    // Re-enable all save buttons
+    [['btn-save-bulk','Agregar Cupones'],['btn-save-generate','Generar y Guardar'],['btn-save-single','Agregar Cupón']].forEach(([bid, label]) => {
+      const b = document.getElementById(bid);
+      if (b) { b.disabled = false; b.classList.remove('btn-loading'); b.textContent = label; }
+    });
+    isSavingBulkCupons = false; isSavingGeneratedCupons = false; isSavingSingleCupon = false;
+  }
+
+  if (id === 'modal-new-client') {
+    const today  = new Date().toISOString().split('T')[0];
+    document.getElementById('nc-fecha').value = today;
+    const locSel = document.getElementById('nc-localidad');
+    if (locSel) {
+      const smOpt = Array.from(locSel.options).find(o => normalizeLoc(o.value).includes('san miguel'));
+      if (smOpt) locSel.value = smOpt.value;
+    }
+    // Re-enable save button
+    const btn = document.getElementById('btn-save-client');
+    if (btn) { btn.disabled = false; btn.classList.remove('btn-loading'); btn.textContent = 'Guardar Cliente'; }
+    isSavingClient = false;
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// ============================================================
+// ERROR MODAL
+// ============================================================
+function showErrorModal(title, msg) {
+  document.getElementById('error-modal-title').textContent = title;
+  document.getElementById('error-modal-msg').textContent   = msg;
+  openModal('modal-error');
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg, type = '') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+  setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+</body>
+</html>
